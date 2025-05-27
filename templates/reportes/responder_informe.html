@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Responder Informe - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">Responder Informe</div>
+<div class="page-subtitle">{{ informe.titulo }}</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-reply me-2"></i>Formulario de Respuesta
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Por favor corrige los siguientes errores:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.mensaje.id_for_label }}" class="form-label">
+                            <i class="fas fa-comment me-1"></i>Mensaje de Respuesta
+                        </label>
+                        {{ form.mensaje }}
+                        {% if form.mensaje.errors %}
+                            <div class="text-danger small">{{ form.mensaje.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.archivo_adjunto.id_for_label }}" class="form-label">
+                            <i class="fas fa-paperclip me-1"></i>Archivo Adjunto (Opcional)
+                        </label>
+                        {{ form.archivo_adjunto }}
+                        {% if form.archivo_adjunto.errors %}
+                            <div class="text-danger small">{{ form.archivo_adjunto.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="nuevo_estado" class="form-label">
+                            <i class="fas fa-flag me-1"></i>Cambiar Estado del Informe
+                        </label>
+                        <select name="nuevo_estado" id="nuevo_estado" class="form-select">
+                            <option value="">Mantener estado actual</option>
+                            <option value="en_revision">En Revisión</option>
+                            <option value="aprobado">Aprobado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="requiere_correccion">Requiere Corrección</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'reportes:detalle_informe' informe.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-paper-plane me-2"></i>Enviar Respuesta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Información del Informe
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Tipo:</strong>
+                    <span class="badge bg-info ms-2">{{ informe.tipo.get_nombre_display }}</span>
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Estado Actual:</strong>
+                    {% if informe.estado == 'pendiente' %}
+                        <span class="badge bg-warning ms-2">Pendiente</span>
+                    {% elif informe.estado == 'en_revision' %}
+                        <span class="badge bg-info ms-2">En Revisión</span>
+                    {% elif informe.estado == 'aprobado' %}
+                        <span class="badge bg-success ms-2">Aprobado</span>
+                    {% elif informe.estado == 'rechazado' %}
+                        <span class="badge bg-danger ms-2">Rechazado</span>
+                    {% else %}
+                        <span class="badge bg-warning ms-2">Requiere Corrección</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Usuario:</strong> {{ informe.usuario.get_full_name|default:informe.usuario.username }}
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Municipalidad:</strong> {{ informe.usuario.get_municipalidad_display|default:"N/A" }}
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Período:</strong> {{ informe.get_periodo_display }}
+                </div>
+                
+                <div class="mb-2">
+                    <strong>Fecha:</strong> {{ informe.fecha_subida|date:"d/m/Y" }}
+                </div>
+                
+                {% if informe.archivo_adjunto %}
+                <hr>
+                <a href="{{ informe.archivo_adjunto.url }}" class="btn btn-outline-primary btn-sm w-100" target="_blank">
+                    <i class="fas fa-download me-2"></i>Ver Archivo Original
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>Descripción Original
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small">{{ informe.descripcion }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

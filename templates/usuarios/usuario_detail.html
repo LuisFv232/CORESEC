@@ -1,0 +1,192 @@
+{% extends 'dashboard/dashboard_base.html' %}
+
+{% block title %}Detalle de Usuario - ITCA 360{% endblock %}
+
+{% block header_title %}Detalle de Usuario{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>Información de Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle mx-auto mb-3" style="width: 100px; height: 100px; background-color: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--primary-color);">
+                        {{ usuario.first_name|first|upper }}{{ usuario.last_name|first|upper }}
+                    </div>
+                    <h3>{{ usuario.get_full_name|default:usuario.username }}</h3>
+                    <p class="text-muted">@{{ usuario.username }}</p>
+                    
+                    {% if usuario.is_staff %}
+                        <span class="badge bg-danger">Administrador</span>
+                    {% elif usuario.role == 'COORDINATOR' %}
+                        <span class="badge bg-purple">Coordinador</span>
+                    {% elif usuario.role == 'MUNICIPAL_MANAGER' %}
+                        <span class="badge bg-success">Encargado Municipal</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Usuario</span>
+                    {% endif %}
+                    
+                    {% if usuario.is_active %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-danger">Inactivo</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <p class="form-control-static">{{ usuario.email }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Teléfono</label>
+                    <p class="form-control-static">{{ usuario.phone|default:"No especificado" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Cargo</label>
+                    <p class="form-control-static">{{ usuario.position|default:"No especificado" }}</p>
+                </div>
+                
+                {% if usuario.municipality %}
+                <div class="mb-3">
+                    <label class="form-label text-muted">Municipalidad</label>
+                    <p class="form-control-static">{{ usuario.get_municipality_display }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Fecha de Registro</label>
+                    <p class="form-control-static">{{ usuario.date_joined|date:"d/m/Y H:i" }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Último Acceso</label>
+                    <p class="form-control-static">{{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Actividad del Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Aquí se podría mostrar la actividad del usuario, como reportes creados, documentos subidos, etc. -->
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="display-4 text-primary">{{ usuario.reporte_set.count }}</h3>
+                                <p class="text-muted">Reportes Creados</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="display-4 text-primary">{{ usuario.documento_set.count }}</h3>
+                                <p class="text-muted">Documentos Subidos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3 class="display-4 text-primary">{{ usuario.actividad_set.count }}</h3>
+                                <p class="text-muted">Actividades Registradas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="mt-4 mb-3">Reportes Recientes</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reporte in usuario.reporte_set.all|slice:":5" %}
+                            <tr>
+                                <td>{{ reporte.titulo }}</td>
+                                <td>{{ reporte.get_tipo_display }}</td>
+                                <td>{{ reporte.fecha_creacion|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if reporte.aprobado %}
+                                        <span class="badge bg-success">Aprobado</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No hay reportes recientes</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{% url 'usuarios:usuarios_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a la lista
+            </a>
+            <a href="{% url 'usuarios:usuario_edit' usuario.id %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Editar Usuario
+            </a>
+            {% if usuario.id != request.user.id %}
+            <button class="btn btn-danger" onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')">
+                <i class="fas fa-trash me-2"></i>Eliminar Usuario
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function eliminarUsuario(userId, username) {
+    if (confirm(`¿Estás seguro de que deseas eliminar al usuario ${username}? Esta acción no se puede deshacer.`)) {
+        fetch(`/usuarios/${userId}/eliminar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.mensaje);
+                window.location.href = "{% url 'usuarios:usuarios_list' %}";
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al eliminar el usuario');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,1133 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Gestor de Documentos - ITCA 360{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #1a9d68;
+        --primary-dark: #158455;
+        --primary-light: #e8f5f0;
+        --secondary-color: #f8f9fa;
+        --text-dark: #2c3e50;
+        --text-muted: #6c757d;
+        --border-color: #dee2e6;
+        --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        --shadow-hover: 0 4px 20px rgba(0,0,0,0.15);
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+    }
+
+    .gestor-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 15px 15px;
+    }
+
+    .gestor-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .management-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: var(--primary-color);
+    }
+
+    .btn-primary-custom {
+        background: var(--primary-color);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary-custom:hover {
+        background: var(--primary-dark);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .filters-section {
+        background: var(--secondary-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control-custom {
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.75rem;
+        transition: border-color 0.3s ease;
+        font-size: 0.9rem;
+    }
+
+    .form-control-custom:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(26, 157, 104, 0.25);
+        outline: none;
+    }
+
+    .breadcrumb-section {
+        background: var(--primary-light);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb-custom {
+        background: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-item {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .breadcrumb-item:hover {
+        color: var(--primary-color);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .breadcrumb-separator {
+        color: var(--text-muted);
+        margin: 0 0.5rem;
+    }
+
+    .folders-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .folder-card {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .folder-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-color);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .folder-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .folder-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .folder-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .folder-card:hover .folder-icon {
+        transform: scale(1.1);
+    }
+
+    .folder-name {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .folder-info {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+
+    .folder-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .upload-section {
+        background: linear-gradient(135deg, var(--primary-light) 0%, #f8f9fa 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 2px dashed var(--primary-color);
+    }
+
+    .upload-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .upload-header h3 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-header p {
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .upload-form {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .file-upload-area {
+        border: 3px dashed var(--border-color);
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .file-upload-area:hover,
+    .file-upload-area.dragover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-light);
+    }
+
+    .file-upload-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-text {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .file-upload-hint {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .file-input-hidden {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-preview {
+        background: var(--secondary-color);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+
+    .file-preview-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .file-preview-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .file-preview-info h5 {
+        margin: 0 0 0.25rem 0;
+        font-weight: 500;
+    }
+
+    .file-preview-meta {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .documents-table {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .table-custom {
+        margin: 0;
+    }
+
+    .table-custom thead {
+        background: var(--primary-light);
+    }
+
+    .table-custom th {
+        border: none;
+        color: var(--primary-dark);
+        font-weight: 600;
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .table-custom td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-color: var(--border-color);
+    }
+
+    .table-custom tr:hover {
+        background-color: var(--secondary-color);
+    }
+
+    .document-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+
+    .document-title {
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .document-meta {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .document-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        border: none;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-action:hover {
+        opacity: 0.8;
+        transform: scale(1.1);
+    }
+
+    .btn-view {
+        background: var(--info-color);
+    }
+
+    .btn-edit {
+        background: var(--warning-color);
+    }
+
+    .btn-delete {
+        background: var(--danger-color);
+    }
+
+    .btn-approve {
+        background: var(--success-color);
+    }
+
+    .badge-custom {
+        padding: 0.35rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-pending {
+        background: var(--warning-color);
+        color: #212529;
+    }
+
+    .badge-approved {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: var(--border-color);
+    }
+
+    .empty-state h3 {
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .progress-bar-custom {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--border-color);
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        transition: width 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        .gestor-header {
+            padding: 1.5rem 0;
+        }
+
+        .gestor-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .management-section {
+            padding: 1.5rem;
+        }
+
+        .folders-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .upload-section {
+            padding: 1.5rem;
+        }
+
+        .file-upload-area {
+            padding: 2rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gestor-container">
+    <!-- Header -->
+    <div class="gestor-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1><i class="fas fa-folder-open me-3"></i>Gestor de Documentos</h1>
+                    <p>Sistema de gestión documental para municipios de Huánuco</p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <a href="{% url 'herramientas:herramientas' %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Herramientas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: var(--primary-color);">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-number">{{ stats.municipios_activos }}</div>
+                <div class="stat-label">Municipios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: var(--info-color);">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <div class="stat-number">{{ stats.total_carpetas }}</div>
+                <div class="stat-label">Carpetas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: var(--success-color);">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-number">{{ stats.documentos_municipales }}</div>
+                <div class="stat-label">Documentos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: var(--warning-color);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number">{{ stats.documentos_pendientes }}</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <form method="GET" id="filtrosForm">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">Municipio</label>
+                        <select name="municipio" class="form-control-custom">
+                            <option value="">Todos los municipios</option>
+                            {% for municipio in municipios %}
+                            <option value="{{ municipio }}" {% if municipio_filtro == municipio %}selected{% endif %}>
+                                {{ municipio }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Tipo de Documento</label>
+                        <select name="tipo" class="form-control-custom">
+                            <option value="">Todos los tipos</option>
+                            {% for tipo in tipos_documentos %}
+                            <option value="{{ tipo }}" {% if tipo_filtro == tipo %}selected{% endif %}>
+                                {{ tipo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Año</label>
+                        <select name="año" class="form-control-custom">
+                            <option value="">Todos los años</option>
+                            {% for año in años_disponibles %}
+                            <option value="{{ año }}" {% if año_filtro == año|stringformat:"s" %}selected{% endif %}>
+                                {{ año }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-filter me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Navegación de carpetas -->
+        {% if breadcrumb %}
+        <div class="breadcrumb-section">
+            <nav class="breadcrumb-custom">
+                <a href="{% url 'herramientas:gestor_documentos' %}" class="breadcrumb-item">
+                    <i class="fas fa-home me-1"></i>Inicio
+                </a>
+                {% for item in breadcrumb %}
+                <span class="breadcrumb-separator">></span>
+                {% if forloop.last %}
+                <span class="breadcrumb-item active">{{ item.nombre }}</span>
+                {% else %}
+                <a href="{% url 'herramientas:gestor_documentos' %}{{ item.url }}" class="breadcrumb-item">
+                    {{ item.nombre }}
+                </a>
+                {% endif %}
+                {% endfor %}
+            </nav>
+        </div>
+        {% endif %}
+
+        <!-- Sección principal -->
+        <div class="management-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-folder"></i>
+                    {% if carpeta_actual %}
+                        Contenido de {{ carpeta_actual.nombre }}
+                    {% else %}
+                        Municipios de Huánuco
+                    {% endif %}
+                </h3>
+                {% if carpeta_actual %}
+                <a href="#" class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#subirDocumentoModal">
+                    <i class="fas fa-upload me-2"></i>Subir Documento
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Carpetas -->
+            {% if carpetas %}
+            <div class="folders-grid">
+                {% for carpeta in carpetas %}
+                <a href="{% url 'herramientas:gestor_documentos' %}?carpeta={{ carpeta.id }}" class="folder-card">
+                    <div class="folder-icon">
+                        {% if carpeta.nombre in tipos_documentos %}
+                            {% if carpeta.nombre == 'ITCA' %}
+                                <i class="fas fa-chart-line"></i>
+                            {% elif carpeta.nombre == 'Ficha de Verificación' %}
+                                <i class="fas fa-clipboard-check"></i>
+                            {% elif carpeta.nombre == 'Supervisiones' %}
+                                <i class="fas fa-eye"></i>
+                            {% elif carpeta.nombre == 'ITS' %}
+                                <i class="fas fa-cogs"></i>
+                            {% elif carpeta.nombre == 'IAS' %}
+                                <i class="fas fa-tasks"></i>
+                            {% else %}
+                                <i class="fas fa-folder"></i>
+                            {% endif %}
+                        {% elif carpeta.nombre|length == 4 and carpeta.nombre.isdigit %}
+                            <i class="fas fa-calendar-alt"></i>
+                        {% elif carpeta.nombre in 'T1,T2,T3,T4' %}
+                            <i class="fas fa-calendar-week"></i>
+                        {% else %}
+                            <i class="fas fa-map-marker-alt"></i>
+                        {% endif %}
+                    </div>
+                    <div class="folder-name">{{ carpeta.nombre }}</div>
+                    <div class="folder-info">
+                        <div class="folder-meta">
+                            <small>{{ carpeta.documentos.count }} documento{{ carpeta.documentos.count|pluralize }}</small>
+                            {% if carpeta.año %}
+                            <small>Año {{ carpeta.año }}</small>
+                            {% endif %}
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Documentos en la carpeta actual -->
+            {% if documentos_municipales %}
+            <div class="section-header">
+                <h4 class="section-title">
+                    <i class="fas fa-file-alt"></i>
+                    Documentos
+                </h4>
+            </div>
+
+            <div class="documents-table">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"></th>
+                            <th>Documento</th>
+                            <th>Subido por</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th style="width: 150px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for documento in documentos_municipales %}
+                        <tr>
+                            <td>
+                                <div class="document-icon" style="background-color: var(--primary-color);">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="document-title">{{ documento.titulo }}</div>
+                                <div class="document-meta">{{ documento.archivo.name|slice:"20:" }}</div>
+                            </td>
+                            <td>{{ documento.usuario_subida.get_full_name|default:documento.usuario_subida.username }}</td>
+                            <td>{{ documento.fecha_subida|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if documento.aprobado %}
+                                <span class="badge badge-custom badge-approved">Aprobado</span>
+                                {% else %}
+                                <span class="badge badge-custom badge-pending">Pendiente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="document-actions">
+                                    <a href="{{ documento.archivo.url }}" class="btn-action btn-view" title="Ver documento" target="_blank">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if not documento.aprobado and request.user.role in 'ADMIN,COORDINATOR' %}
+                                    <button class="btn-action btn-approve" title="Aprobar documento" 
+                                            onclick="aprobarDocumento({{ documento.id }})">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    {% endif %}
+                                    {% if request.user.role in 'ADMIN,COORDINATOR' %}
+                                    <button class="btn-action btn-delete" title="Eliminar documento"
+                                            onclick="eliminarDocumento({{ documento.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% elif carpeta_actual %}
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <h3>No hay documentos en esta carpeta</h3>
+                <p>Sube un documento para comenzar a organizar la información.</p>
+                <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#subirDocumentoModal">
+                    <i class="fas fa-upload me-2"></i>Subir Primer Documento
+                </button>
+            </div>
+            {% elif not carpetas %}
+            <div class="empty-state">
+                <i class="fas fa-folder"></i>
+                <h3>No se encontraron carpetas</h3>
+                <p>Ajusta los filtros o crea la estructura de carpetas.</p>
+                <button class="btn btn-primary-custom" onclick="crearEstructuraCarpetas()">
+                    <i class="fas fa-plus me-2"></i>Crear Estructura
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Subir Documento -->
+<div class="modal fade" id="subirDocumentoModal" tabindex="-1" aria-labelledby="subirDocumentoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="subirDocumentoModalLabel">
+                    <i class="fas fa-upload me-2"></i>Subir Documento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="subirDocumentoForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="carpeta_id" value="{{ carpeta_actual.id }}">
+                    
+                    <div class="upload-section">
+                        <div class="upload-header">
+                            <h3>Seleccionar Archivo</h3>
+                            <p>Arrastra y suelta tu archivo aquí o haz clic para seleccionar</p>
+                        </div>
+                        
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <input type="file" name="archivo" id="archivoInput" class="file-input-hidden" required>
+                            <div class="file-upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="file-upload-text">Seleccionar archivo</div>
+                            <div class="file-upload-hint">PDF, DOC, XLS, ZIP (máx. 50MB)</div>
+                        </div>
+                        
+                        <div class="file-preview" id="filePreview">
+                            <div class="file-preview-content">
+                                <div class="file-preview-icon">
+                                    <i class="fas fa-file"></i>
+                                </div>
+                                <div class="file-preview-info">
+                                    <h5 id="fileName"></h5>
+                                    <div class="file-preview-meta">
+                                        <span id="fileSize"></span> • <span id="fileType"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-custom">
+                                <div class="progress-fill" id="uploadProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="titulo" class="form-label">Título del documento *</label>
+                            <input type="text" class="form-control form-control-custom" id="titulo" name="titulo" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control form-control-custom" id="descripcion" name="descripcion" rows="3" 
+                                      placeholder="Descripción opcional del documento"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary-custom" id="btnSubirDocumento">
+                    <i class="fas fa-upload me-2"></i>Subir Documento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const archivoInput = document.getElementById('archivoInput');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileType = document.getElementById('fileType');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const btnSubirDocumento = document.getElementById('btnSubirDocumento');
+    const subirDocumentoForm = document.getElementById('subirDocumentoForm');
+
+    // Eventos de drag and drop
+    fileUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+
+    fileUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+    });
+
+    fileUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            archivoInput.files = files;
+            mostrarPreviewArchivo(files[0]);
+        }
+    });
+
+    // Evento de selección de archivo
+    archivoInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            mostrarPreviewArchivo(this.files[0]);
+        }
+    });
+
+    // Función para mostrar preview del archivo
+    function mostrarPreviewArchivo(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatearTamaño(file.size);
+        fileType.textContent = obtenerTipoArchivo(file.name);
+        
+        // Cambiar icono según tipo de archivo
+        const iconElement = filePreview.querySelector('.file-preview-icon i');
+        const extension = file.name.split('.').pop().toLowerCase();
+        
+        if (['pdf'].includes(extension)) {
+            iconElement.className = 'fas fa-file-pdf';
+        } else if (['doc', 'docx'].includes(extension)) {
+            iconElement.className = 'fas fa-file-word';
+        } else if (['xls', 'xlsx'].includes(extension)) {
+            iconElement.className = 'fas fa-file-excel';
+        } else if (['zip', 'rar'].includes(extension)) {
+            iconElement.className = 'fas fa-file-archive';
+        } else {
+            iconElement.className = 'fas fa-file';
+        }
+        
+        filePreview.style.display = 'block';
+    }
+
+    // Función para formatear tamaño de archivo
+    function formatearTamaño(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Función para obtener tipo de archivo
+    function obtenerTipoArchivo(filename) {
+        const extension = filename.split('.').pop().toLowerCase();
+        const tipos = {
+            'pdf': 'Documento PDF',
+            'doc': 'Documento Word',
+            'docx': 'Documento Word',
+            'xls': 'Hoja de cálculo',
+            'xlsx': 'Hoja de cálculo',
+            'zip': 'Archivo comprimido',
+            'rar': 'Archivo comprimido'
+        };
+        return tipos[extension] || 'Archivo';
+    }
+
+    // Subir documento
+    btnSubirDocumento.addEventListener('click', function() {
+        const formData = new FormData(subirDocumentoForm);
+        
+        // Validaciones
+        if (!archivoInput.files[0]) {
+            alert('Por favor selecciona un archivo');
+            return;
+        }
+        
+        if (!document.getElementById('titulo').value.trim()) {
+            alert('Por favor ingresa un título para el documento');
+            return;
+        }
+        
+        // Deshabilitar botón y mostrar progreso
+        btnSubirDocumento.disabled = true;
+        btnSubirDocumento.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Subiendo...';
+        
+        // Simular progreso
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 30;
+            if (progress > 90) progress = 90;
+            uploadProgress.style.width = progress + '%';
+        }, 200);
+        
+        fetch('{% url "herramientas:subir_documento_municipal" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            clearInterval(progressInterval);
+            uploadProgress.style.width = '100%';
+            
+            if (data.success) {
+                setTimeout(() => {
+                    alert('Documento subido exitosamente');
+                    window.location.reload();
+                }, 500);
+            } else {
+                alert('Error: ' + data.error);
+                btnSubirDocumento.disabled = false;
+                btnSubirDocumento.innerHTML = '<i class="fas fa-upload me-2"></i>Subir Documento';
+            }
+        })
+        .catch(error => {
+            clearInterval(progressInterval);
+            console.error('Error:', error);
+            alert('Error al subir el documento');
+            btnSubirDocumento.disabled = false;
+            btnSubirDocumento.innerHTML = '<i class="fas fa-upload me-2"></i>Subir Documento';
+        });
+    });
+
+    // Filtros automáticos
+    const filtrosForm = document.getElementById('filtrosForm');
+    const selectores = filtrosForm.querySelectorAll('select');
+    
+    selectores.forEach(selector => {
+        selector.addEventListener('change', function() {
+            filtrosForm.submit();
+        });
+    });
+});
+
+// Funciones globales
+function aprobarDocumento(id) {
+    if (confirm('¿Estás seguro de que deseas aprobar este documento?')) {
+        fetch(`/herramientas/aprobar-documento/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Documento aprobado exitosamente');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al aprobar el documento');
+        });
+    }
+}
+
+function eliminarDocumento(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer.')) {
+        fetch(`/herramientas/eliminar-documento/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Documento eliminado exitosamente');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al eliminar el documento');
+        });
+    }
+}
+
+function crearEstructuraCarpetas() {
+    if (confirm('¿Deseas crear la estructura completa de carpetas para todos los municipios?')) {
+        alert('Funcionalidad en desarrollo. Contacta al administrador del sistema.');
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

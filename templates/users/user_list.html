@@ -1,0 +1,174 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Gestión de Usuarios - ITCA360{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex-1 p-6 animate-fade-in">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
+        
+        {% if user.role == 'ADMIN' %}
+        <a href="{% url 'user_create' %}" class="bg-green-custom hover:bg-green-light text-white px-4 py-2 rounded-lg flex items-center transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Crear Usuario
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Filtros -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label for="role-filter" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Usuario</label>
+                <select id="role-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Todos</option>
+                    <option value="ADMIN">Administrador</option>
+                    <option value="COORDINATOR">Coordinador</option>
+                    <option value="MUNICIPAL_MANAGER">Encargado Municipal</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 min-w-[200px]">
+                <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select id="status-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Todos</option>
+                    <option value="active">Activo</option>
+                    <option value="inactive">Inactivo</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 min-w-[200px]">
+                <label for="search-filter" class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+                <input type="text" id="search-filter" placeholder="Nombre, email..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Lista de Usuarios -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Municipalidad</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Registro</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for user_obj in users %}
+                    <tr class="hover:bg-gray-50 transition-colors user-row" 
+                        data-role="{{ user_obj.role }}" 
+                        data-status="{% if user_obj.is_active %}active{% else %}inactive{% endif %}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-green-100 text-green-custom rounded-full flex items-center justify-center">
+                                    <span class="font-medium">{{ user_obj.first_name.0|default:'U' }}{{ user_obj.last_name.0|default:'' }}</span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ user_obj.get_full_name }}</div>
+                                    <div class="text-sm text-gray-500">{{ user_obj.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if user_obj.role == 'ADMIN' %}bg-purple-100 text-purple-800
+                                {% elif user_obj.role == 'COORDINATOR' %}bg-blue-100 text-blue-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ user_obj.get_role_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ user_obj.get_municipality_display|default:"No aplica" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if user_obj.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if user_obj.is_active %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ user_obj.date_joined|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                {% if user.role == 'ADMIN' %}
+                                <a href="{% url 'user_edit' user_obj.id %}" class="text-blue-600 hover:text-blue-900" title="Editar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'user_change_password' user_obj.id %}" class="text-yellow-600 hover:text-yellow-900" title="Cambiar contraseña">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'toggle_user_status' user_obj.id %}" class="{% if user_obj.is_active %}text-red-600 hover:text-red-900{% else %}text-green-600 hover:text-green-900{% endif %}" title="{% if user_obj.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                    {% if user_obj.is_active %}
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                    </svg>
+                                    {% else %}
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {% endif %}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleFilter = document.getElementById('role-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const searchFilter = document.getElementById('search-filter');
+    const userRows = document.querySelectorAll('.user-row');
+    
+    function filterUsers() {
+        const roleValue = roleFilter.value;
+        const statusValue = statusFilter.value;
+        const searchValue = searchFilter.value.toLowerCase();
+        
+        userRows.forEach(row => {
+            const role = row.getAttribute('data-role');
+            const status = row.getAttribute('data-status');
+            const text = row.textContent.toLowerCase();
+            
+            const roleMatch = !roleValue || role === roleValue;
+            const statusMatch = !statusValue || status === statusValue;
+            const searchMatch = !searchValue || text.includes(searchValue);
+            
+            if (roleMatch && statusMatch && searchMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    roleFilter.addEventListener('change', filterUsers);
+    statusFilter.addEventListener('change', filterUsers);
+    searchFilter.addEventListener('input', filterUsers);
+    
+    // Animación para las filas
+    userRows.forEach((row, index) => {
+        row.style.animation = `fadeIn 0.3s ease-in-out ${index * 0.05}s both`;
+    });
+});
+</script>
+{% endblock %}

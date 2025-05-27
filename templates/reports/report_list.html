@@ -1,0 +1,239 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Informes y Reportes - ITCA360{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex-1 p-6 animate-fade-in">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Informes y Reportes</h1>
+        
+        {% if user.role == 'MUNICIPAL_MANAGER' %}
+        <a href="{% url 'upload_report' %}" class="bg-green-custom hover:bg-green-light text-white px-4 py-2 rounded-lg flex items-center transition-colors transform hover:scale-105">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+            </svg>
+            Subir Nuevo Informe
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Filtros -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+        <div class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select id="status-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Todos</option>
+                    <option value="PENDING">Pendientes</option>
+                    <option value="ANALYZING">Analizando</option>
+                    <option value="APPROVED">Aprobados</option>
+                    <option value="REJECTED">Rechazados</option>
+                </select>
+            </div>
+            
+            {% if user.role != 'MUNICIPAL_MANAGER' %}
+            <div class="flex-1 min-w-[200px]">
+                <label for="municipality-filter" class="block text-sm font-medium text-gray-700 mb-1">Municipalidad</label>
+                <select id="municipality-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Todas</option>
+                    {% for code, name in user.MUNICIPALITY_CHOICES %}
+                        <option value="{{ code }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            
+            <div class="flex-1 min-w-[200px]">
+                <label for="date-filter" class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                <select id="date-filter" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">Todas</option>
+                    <option value="today">Hoy</option>
+                    <option value="week">Esta semana</option>
+                    <option value="month">Este mes</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 min-w-[200px]">
+                <label for="search-filter" class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
+                <input type="text" id="search-filter" placeholder="Título, municipalidad..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+        </div>
+    </div>
+    
+    {% if reports %}
+    <!-- Lista de Informes -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Municipalidad</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subido por</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for report in reports %}
+                    <tr class="hover:bg-gray-50 transition-colors report-row" 
+                        data-status="{{ report.status }}" 
+                        data-municipality="{{ report.municipality }}"
+                        data-date="{{ report.upload_date|date:'Y-m-d' }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ report.title }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ report.municipality }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ report.uploaded_by.get_full_name }}</div>
+                            <div class="text-xs text-gray-500">{{ report.uploaded_by.email }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if report.status == 'APPROVED' %}bg-green-100 text-green-800
+                                {% elif report.status == 'REJECTED' %}bg-red-100 text-red-800
+                                {% elif report.status == 'ANALYZING' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ report.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ report.upload_date|date:"d/m/Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="{% url 'report_detail' report.id %}" class="text-blue-600 hover:text-blue-900" title="Ver detalles">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                                
+                                {% if user.role != 'MUNICIPAL_MANAGER' %}
+                                <a href="{% url 'report_analysis' report.id %}" class="text-green-600 hover:text-green-900" title="Ver análisis">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </a>
+                                {% endif %}
+                                
+                                <a href="{{ report.file.url }}" target="_blank" class="text-gray-600 hover:text-gray-900" title="Descargar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Sin informes -->
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No hay informes disponibles</h3>
+        
+        {% if user.role == 'MUNICIPAL_MANAGER' %}
+        <p class="mt-1 text-sm text-gray-500">Comience subiendo su primer informe.</p>
+        <div class="mt-6">
+            <a href="{% url 'upload_report' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-custom hover:bg-green-light">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+                Subir Informe
+            </a>
+        </div>
+        {% else %}
+        <p class="mt-1 text-sm text-gray-500">No hay informes disponibles para revisar en este momento.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('status-filter');
+    const dateFilter = document.getElementById('date-filter');
+    const searchFilter = document.getElementById('search-filter');
+    const reportRows = document.querySelectorAll('.report-row');
+    
+    {% if user.role != 'MUNICIPAL_MANAGER' %}
+    const municipalityFilter = document.getElementById('municipality-filter');
+    {% endif %}
+    
+    function filterReports() {
+        const statusValue = statusFilter.value;
+        const dateValue = dateFilter.value;
+        const searchValue = searchFilter.value.toLowerCase();
+        {% if user.role != 'MUNICIPAL_MANAGER' %}
+        const municipalityValue = municipalityFilter.value;
+        {% endif %}
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        reportRows.forEach(row => {
+            const status = row.getAttribute('data-status');
+            const dateStr = row.getAttribute('data-date');
+            const text = row.textContent.toLowerCase();
+            {% if user.role != 'MUNICIPAL_MANAGER' %}
+            const municipality = row.getAttribute('data-municipality');
+            {% endif %}
+            
+            const statusMatch = !statusValue || status === statusValue;
+            {% if user.role != 'MUNICIPAL_MANAGER' %}
+            const municipalityMatch = !municipalityValue || municipality === municipalityValue;
+            {% else %}
+            const municipalityMatch = true;
+            {% endif %}
+            const searchMatch = !searchValue || text.includes(searchValue);
+            
+            let dateMatch = true;
+            if (dateValue) {
+                const reportDate = new Date(dateStr);
+                
+                if (dateValue === 'today') {
+                    dateMatch = reportDate >= today;
+                } else if (dateValue === 'week') {
+                    dateMatch = reportDate >= weekStart;
+                } else if (dateValue === 'month') {
+                    dateMatch = reportDate >= monthStart;
+                }
+            }
+            
+            if (statusMatch && municipalityMatch && dateMatch && searchMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    statusFilter.addEventListener('change', filterReports);
+    dateFilter.addEventListener('change', filterReports);
+    searchFilter.addEventListener('input', filterReports);
+    {% if user.role != 'MUNICIPAL_MANAGER' %}
+    municipalityFilter.addEventListener('change', filterReports);
+    {% endif %}
+    
+    // Animación para las filas
+    reportRows.forEach((row, index) => {
+        row.style.animation = `fadeIn 0.3s ease-in-out ${index * 0.05}s both`;
+    });
+});
+</script>
+{% endblock %}

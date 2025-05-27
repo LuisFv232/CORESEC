@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - CORESEC Huánuco</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 900px;
+            width: 100%;
+            margin: 20px;
+            position: relative;
+        }
+        
+        /* AGREGADO: Botón de casa */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(29, 177, 120, 0.1);
+            border: 2px solid rgba(29, 177, 120, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1DB178;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+        
+        .home-btn:hover {
+            background: #1DB178;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(29, 177, 120, 0.4);
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(29, 177, 120, 0.1) 0%, rgba(29, 177, 120, 0.05) 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(29, 177, 120, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .logo-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(29, 177, 120, 0.3);
+        }
+
+        .logo-coresec {
+            height: 100px;
+            filter: brightness(1.1) contrast(1.1);
+            transition: all 0.3s ease;
+        }
+
+        .logo-shine {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .logo-wrapper:hover .logo-shine {
+            left: 100%;
+        }
+
+        .brand-text {
+            text-align: center;
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .brand-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .brand-line {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            margin: 0 auto;
+            border-radius: 2px;
+        }
+        
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1rem 0.75rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #1DB178;
+            box-shadow: 0 0 0 0.2rem rgba(29, 177, 120, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(29, 177, 120, 0.4);
+        }
+        
+        .user-type-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-type-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .user-type-card:hover {
+            transform: translateY(-5px);
+            border-color: #1DB178;
+            box-shadow: 0 10px 25px rgba(29, 177, 120, 0.2);
+        }
+        
+        .user-type-card.selected {
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            color: white;
+            border-color: #1DB178;
+            transform: scale(1.05);
+        }
+        
+        .user-type-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0.5rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            color: white;
+            transform: scale(1.2);
+        }
+        
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+            animation: fadeInRight 0.5s ease;
+        }
+        
+        .municipalidad-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .municipalidad-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .municipalidad-card:hover {
+            border-color: #1DB178;
+            transform: translateY(-2px);
+        }
+        
+        .municipalidad-card.selected {
+            background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+            color: white;
+            border-color: #1DB178;
+        }
+        
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .login-link a {
+            color: #1DB178;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .login-link a:hover {
+            color: #16a065;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card animate__animated animate__fadeInUp">
+            <!-- AGREGADO: Botón de casa -->
+            <a href="{% url 'home' %}" class="home-btn" title="Ir al inicio">
+                <i class="fas fa-home"></i>
+            </a>
+            
+            <div class="logo-section">
+                <div class="logo-container">
+                    <div class="logo-wrapper">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ed6e7ee6-d0c2-4af7-90b5-12e06ae9843c.jfif-26CKa0VYx7mtxDTdhjRc4iuuecWFY5.jpeg" alt="CORESEC" class="logo-coresec">
+                        <div class="logo-shine"></div>
+                    </div>
+                </div>
+                <div class="brand-text">
+                    <h2 class="brand-title">CORESEC</h2>
+                    <p class="brand-subtitle">Sistema de Gestión de Informes</p>
+                    <div class="brand-line"></div>
+                </div>
+            </div>
+            
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
+            </div>
+            
+            <form method="post" id="registerForm">
+                {% csrf_token %}
+                
+                <!-- Step 1: User Type Selection -->
+                <div class="form-section active" id="section1">
+                    <h4 class="text-center mb-4">Selecciona tu tipo de usuario</h4>
+                    
+                    <div class="user-type-selector">
+                        <div class="user-type-card" data-type="administrador">
+                            <i class="fas fa-user-shield user-type-icon"></i>
+                            <h5>Administrador CORESEC</h5>
+                            <small>Acceso completo al sistema</small>
+                        </div>
+                        <div class="user-type-card" data-type="coordinador">
+                            <i class="fas fa-users-cog user-type-icon"></i>
+                            <h5>Coordinador CORESEC</h5>
+                            <small>Gestión y coordinación</small>
+                        </div>
+                        <div class="user-type-card" data-type="municipal">
+                            <i class="fas fa-building user-type-icon"></i>
+                            <h5>Encargado Municipal</h5>
+                            <small>Representante municipal</small>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="tipo_usuario" id="tipo_usuario" required>
+                    
+                    <button type="button" class="btn btn-primary btn-register" onclick="nextStep(2)" disabled id="nextBtn1">
+                        Continuar <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Step 2: Institution/Municipality Selection -->
+                <div class="form-section" id="section2">
+                    <!-- Para CORESEC -->
+                    <div id="coresec-section" style="display: none;">
+                        <h4 class="text-center mb-4">Selecciona tu cargo en CORESEC</h4>
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="cargo_coresec" name="cargo_coresec" placeholder="Especifica tu cargo en CORESEC">
+                            <label for="cargo_coresec">
+                                <i class="fas fa-briefcase me-1"></i>Cargo en CORESEC
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Para Municipales -->
+                    <div id="municipal-section" style="display: none;">
+                        <h4 class="text-center mb-4">Selecciona tu municipalidad</h4>
+                        <div class="municipalidad-grid">
+                            {% for value, label in form.municipalidad.field.choices %}
+                                {% if value %}
+                                    <div class="municipalidad-card" data-municipalidad="{{ value }}">
+                                        <i class="fas fa-map-marker-alt mb-2" style="font-size: 1.5rem;"></i>
+                                        <h6>{{ label }}</h6>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="cargo_municipal" name="cargo_municipal" placeholder="Especifica tu cargo municipal">
+                            <label for="cargo_municipal">
+                                <i class="fas fa-user-tie me-1"></i>Cargo Municipal
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="municipalidad" id="municipalidad">
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(1)">
+                            <i class="fas fa-arrow-left me-2"></i>Anterior
+                        </button>
+                        <button type="button" class="btn btn-primary btn-register" onclick="nextStep(3)" disabled id="nextBtn2" style="width: auto;">
+                            Continuar <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Personal Information -->
+                <div class="form-section" id="section3">
+                    <h4 class="text-center mb-4">Información personal</h4>
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Por favor corrige los siguientes errores:</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.first_name }}
+                                <label for="{{ form.first_name.id_for_label }}">
+                                    <i class="fas fa-user me-1"></i>Nombre
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.last_name }}
+                                <label for="{{ form.last_name.id_for_label }}">
+                                    <i class="fas fa-user me-1"></i>Apellido
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.username }}
+                        <label for="{{ form.username.id_for_label }}">
+                            <i class="fas fa-at me-1"></i>Nombre de usuario
+                        </label>
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.email }}
+                        <label for="{{ form.email.id_for_label }}">
+                            <i class="fas fa-envelope me-1"></i>Correo electrónico
+                        </label>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.password1 }}
+                                <label for="{{ form.password1.id_for_label }}">
+                                    <i class="fas fa-lock me-1"></i>Contraseña
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.password2 }}
+                                <label for="{{ form.password2.id_for_label }}">
+                                    <i class="fas fa-lock me-1"></i>Confirmar contraseña
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.telefono }}
+                                <label for="{{ form.telefono.id_for_label }}">
+                                    <i class="fas fa-phone me-1"></i>Teléfono
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                {{ form.direccion }}
+                                <label for="{{ form.direccion.id_for_label }}">
+                                    <i class="fas fa-home me-1"></i>Dirección
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)">
+                            <i class="fas fa-arrow-left me-2"></i>Anterior
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-register" style="width: auto;">
+                            <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="login-link">
+                <p class="mb-0">¿Ya tienes una cuenta? <a href="{% url 'usuarios:login' %}">Inicia sesión aquí</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentStep = 1;
+        let selectedUserType = '';
+        
+        // User type selection
+        document.querySelectorAll('.user-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.user-type-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                selectedUserType = this.dataset.type;
+                document.getElementById('tipo_usuario').value = selectedUserType;
+                document.getElementById('nextBtn1').disabled = false;
+                
+                this.style.animation = 'pulse 0.6s ease';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 600);
+            });
+        });
+        
+        // Municipality selection
+        document.querySelectorAll('.municipalidad-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.municipalidad-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                document.getElementById('municipalidad').value = this.dataset.municipalidad;
+                checkStep2Completion();
+            });
+        });
+        
+        // Cargo selection
+        document.getElementById('cargo_coresec').addEventListener('input', checkStep2Completion);
+        document.getElementById('cargo_municipal').addEventListener('input', checkStep2Completion);
+        
+        function checkStep2Completion() {
+            const nextBtn2 = document.getElementById('nextBtn2');
+            
+            if (selectedUserType === 'municipal') {
+                const municipalidad = document.getElementById('municipalidad').value;
+                const cargoMunicipal = document.getElementById('cargo_municipal').value.trim();
+                nextBtn2.disabled = !(municipalidad && cargoMunicipal);
+            } else {
+                const cargoCoresec = document.getElementById('cargo_coresec').value.trim();
+                nextBtn2.disabled = !cargoCoresec;
+            }
+        }
+        
+        function nextStep(step) {
+            if (step === 2) {
+                // Show appropriate section based on user type
+                if (selectedUserType === 'municipal') {
+                    document.getElementById('municipal-section').style.display = 'block';
+                    document.getElementById('coresec-section').style.display = 'none';
+                } else {
+                    document.getElementById('coresec-section').style.display = 'block';
+                    document.getElementById('municipal-section').style.display = 'none';
+                }
+            }
+            
+            document.getElementById(`section${currentStep}`).classList.remove('active');
+            document.getElementById(`section${step}`).classList.add('active');
+            
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${currentStep}`).classList.add('completed');
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            currentStep = step;
+        }
+        
+        function prevStep(step) {
+            document.getElementById(`section${currentStep}`).classList.remove('active');
+            document.getElementById(`section${step}`).classList.add('active');
+            
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            document.getElementById(`step${step}`).classList.remove('completed');
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            currentStep = step;
+        }
+        
+        // Form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const tipoUsuario = document.getElementById('tipo_usuario').value;
+            
+            if (!tipoUsuario) {
+                e.preventDefault();
+                alert('Por favor selecciona un tipo de usuario');
+                nextStep(1);
+                return;
+            }
+            
+            if (tipoUsuario === 'municipal') {
+                const municipalidad = document.getElementById('municipalidad').value;
+                const cargoMunicipal = document.getElementById('cargo_municipal').value.trim();
+                
+                if (!municipalidad || !cargoMunicipal) {
+                    e.preventDefault();
+                    alert('Por favor selecciona una municipalidad y especifica tu cargo');
+                    nextStep(2);
+                    return;
+                }
+            } else {
+                const cargoCoresec = document.getElementById('cargo_coresec').value.trim();
+                
+                if (!cargoCoresec) {
+                    e.preventDefault();
+                    alert('Por favor especifica tu cargo en CORESEC');
+                    nextStep(2);
+                    return;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

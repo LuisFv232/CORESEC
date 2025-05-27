@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Informe - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">Subir Nuevo Informe</div>
+<div class="page-subtitle">Completa el formulario para subir un nuevo informe municipal</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>Formulario de Informe
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Por favor corrige los siguientes errores:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" id="informeForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                                    <i class="fas fa-heading me-1"></i>Título del Informe
+                                </label>
+                                {{ form.titulo }}
+                                {% if form.titulo.errors %}
+                                    <div class="text-danger small">{{ form.titulo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>Tipo de Informe
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small">{{ form.tipo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Descripción
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                            <div class="text-danger small">{{ form.descripcion.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.año.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Año
+                                </label>
+                                {{ form.año }}
+                                {% if form.año.errors %}
+                                    <div class="text-danger small">{{ form.año.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6" id="trimestre-field">
+                            <div class="mb-3">
+                                <label for="{{ form.trimestre.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar-alt me-1"></i>Trimestre
+                                </label>
+                                {{ form.trimestre }}
+                                {% if form.trimestre.errors %}
+                                    <div class="text-danger small">{{ form.trimestre.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="informe-padre-field" style="display: none;">
+                        <label for="{{ form.informe_padre.id_for_label }}" class="form-label">
+                            <i class="fas fa-link me-1"></i>Informe Padre (ITS)
+                        </label>
+                        {{ form.informe_padre }}
+                        {% if form.informe_padre.errors %}
+                            <div class="text-danger small">{{ form.informe_padre.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Selecciona el informe ITS al que responde este informe</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.archivo_adjunto.id_for_label }}" class="form-label">
+                            <i class="fas fa-paperclip me-1"></i>Archivo del Informe
+                        </label>
+                        {{ form.archivo_adjunto }}
+                        {% if form.archivo_adjunto.errors %}
+                            <div class="text-danger small">{{ form.archivo_adjunto.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX. Tamaño máximo: 10MB</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'reportes:lista_informes' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-upload me-2"></i>Subir Informe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoSelect = document.getElementById('{{ form.tipo.id_for_label }}');
+    const trimestreField = document.getElementById('trimestre-field');
+    const informePadreField = document.getElementById('informe-padre-field');
+    
+    function toggleFields() {
+        const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+        const tipoText = selectedOption.text.toLowerCase();
+        
+        // Mostrar trimestre solo para informes trimestrales
+        if (tipoText.includes('trimestral')) {
+            trimestreField.style.display = 'block';
+        } else {
+            trimestreField.style.display = 'none';
+            document.getElementById('{{ form.trimestre.id_for_label }}').value = '';
+        }
+        
+        // Mostrar informe padre solo para respuestas ITS
+        if (tipoText.includes('respuesta') || tipoText.includes('its')) {
+            informePadreField.style.display = 'block';
+        } else {
+            informePadreField.style.display = 'none';
+            document.getElementById('{{ form.informe_padre.id_for_label }}').value = '';
+        }
+    }
+    
+    // Ejecutar al cargar la página
+    toggleFields();
+    
+    // Ejecutar cuando cambie la selección
+    tipoSelect.addEventListener('change', toggleFields);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Reporte - ITCA 360</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        .page-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.25);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard:dashboard' %}">
+            <i class="fas fa-graduation-cap me-2"></i>ITCA 360
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard:dashboard' %}">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'reportes:lista_reportes' %}">
+                        <i class="fas fa-file-alt me-1"></i>Reportes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'herramientas:herramientas' %}">
+                        <i class="fas fa-tools me-1"></i>Herramientas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notificaciones:lista_notificaciones' %}">
+                        <i class="fas fa-bell me-1"></i>Notificaciones
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i>{{ user.first_name }} {{ user.last_name }}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}">
+                            <i class="fas fa-user-edit me-1"></i>Mi Perfil
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'usuarios:logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                        </a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-plus me-2"></i>Crear Nuevo Reporte</h1>
+        <p class="mb-0">Completa el formulario para crear un nuevo reporte</p>
+    </div>
+</div>
+
+<!-- Content -->
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="form-card">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                                    <i class="fas fa-heading me-1"></i>Título del Reporte
+                                </label>
+                                {{ form.titulo }}
+                                {% if form.titulo.errors %}
+                                    <div class="text-danger small">{{ form.titulo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>Tipo de Reporte
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small">{{ form.tipo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Descripción
+                        </label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                            <div class="text-danger small">{{ form.descripcion.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.ubicacion.id_for_label }}" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Ubicación
+                                </label>
+                                {{ form.ubicacion }}
+                                {% if form.ubicacion.errors %}
+                                    <div class="text-danger small">{{ form.ubicacion.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.prioridad.id_for_label }}" class="form-label">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Prioridad
+                                </label>
+                                {{ form.prioridad }}
+                                {% if form.prioridad.errors %}
+                                    <div class="text-danger small">{{ form.prioridad.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.archivo_adjunto.id_for_label }}" class="form-label">
+                            <i class="fas fa-paperclip me-1"></i>Archivo Adjunto (Opcional)
+                        </label>
+                        {{ form.archivo_adjunto }}
+                        {% if form.archivo_adjunto.errors %}
+                            <div class="text-danger small">{{ form.archivo_adjunto.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Formatos permitidos: PDF, DOC, DOCX, JPG, PNG. Tamaño máximo: 10MB</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'reportes:lista_reportes' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-submit">
+                            <i class="fas fa-save me-2"></i>Crear Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

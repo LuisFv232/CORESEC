@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Información - CORESEC{% endblock %}
+
+{% block extra_css %}
+<style>
+    .file-explorer {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .explorer-header {
+        background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .breadcrumb-nav {
+        background: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .breadcrumb-custom {
+        margin: 0;
+        background: none;
+        padding: 0;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item a {
+        color: #1DB178;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-custom .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .explorer-toolbar {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .toolbar-left, .toolbar-right {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .explorer-content {
+        padding: 1rem;
+        min-height: 400px;
+    }
+    
+    .file-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .file-item {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        position: relative;
+    }
+    
+    .file-item:hover {
+        background: #f8f9fa;
+        border-color: #1DB178;
+        transform: translateY(-2px);
+    }
+    
+    .file-item.selected {
+        background: rgba(29, 177, 120, 0.1);
+        border-color: #1DB178;
+    }
+    
+    .file-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .folder-icon {
+        color: #ffc107;
+    }
+    
+    .file-icon.pdf {
+        color: #dc3545;
+    }
+    
+    .file-icon.doc {
+        color: #0d6efd;
+    }
+    
+    .file-icon.excel {
+        color: #198754;
+    }
+    
+    .file-icon.image {
+        color: #6f42c1;
+    }
+    
+    .file-name {
+        font-size: 0.875rem;
+        word-break: break-word;
+        line-height: 1.2;
+    }
+    
+    .file-size {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .stats-bar {
+        background: #e9ecef;
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .upload-zone {
+        border: 2px dashed #1DB178;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        margin: 1rem 0;
+        background: rgba(29, 177, 120, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .upload-zone.dragover {
+        background: rgba(29, 177, 120, 0.1);
+        border-color: #16a065;
+    }
+    
+    .context-menu {
+        position: absolute;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        padding: 0.5rem 0;
+        min-width: 150px;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .context-menu-item {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .context-menu-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .context-menu-separator {
+        height: 1px;
+        background: #dee2e6;
+        margin: 0.25rem 0;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #1DB178 0%, #16a065 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(29, 177, 120, 0.3);
+        color: white;
+    }
+    
+    .search-box {
+        max-width: 300px;
+    }
+    
+    @media (max-width: 768px) {
+        .file-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .explorer-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .toolbar-left, .toolbar-right {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-title">Gestión de Información</div>
+<div class="page-subtitle">Organiza y gestiona documentos del sistema CORESEC</div>
+
+<div class="file-explorer">
+    <!-- Header -->
+    <div class="explorer-header">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-folder-open me-2"></i>
+            <h5 class="mb-0">Explorador de Archivos CORESEC</h5>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-light" onclick="refreshExplorer()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-light" onclick="toggleView()">
+                <i class="fas fa-th" id="viewToggleIcon"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-custom">
+                <li class="breadcrumb-item">
+                    <a href="?path=" onclick="navigateToPath('')">
+                        <i class="fas fa-home me-1"></i>Inicio
+                    </a>
+                </li>
+                {% for crumb in breadcrumb %}
+                    <li class="breadcrumb-item">
+                        <a href="?path={{ crumb.ruta }}" onclick="navigateToPath('{{ crumb.ruta }}')">
+                            {{ crumb.nombre }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ol>
+        </nav>
+    </div>
+    
+    <!-- Toolbar -->
+    <div class="explorer-toolbar">
+        <div class="toolbar-left">
+            <button class="btn btn-primary-custom btn-sm" onclick="showUploadModal()">
+                <i class="fas fa-upload me-1"></i>Subir Archivo
+            </button>
+            <button class="btn btn-outline-primary btn-sm" onclick="createFolder()">
+                <i class="fas fa-folder-plus me-1"></i>Nueva Carpeta
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="createStructure()">
+                <i class="fas fa-sitemap me-1"></i>Crear Estructura
+            </button>
+        </div>
+        <div class="toolbar-right">
+            <div class="input-group search-box">
+                <input type="text" class="form-control form-control-sm" placeholder="Buscar archivos..." id="searchInput">
+                <button class="btn btn-outline-secondary btn-sm" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone" style="display: none;">
+        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+        <h5>Arrastra archivos aquí para subirlos</h5>
+        <p class="text-muted">O haz clic en "Subir Archivo" para seleccionar archivos</p>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="explorer-content">
+        <div class="file-grid" id="fileGrid">
+            <!-- Carpetas -->
+            {% for carpeta in carpetas %}
+                <div class="file-item" data-type="folder" data-name="{{ carpeta.nombre }}" ondblclick="navigateToPath('{{ carpeta.ruta }}')" oncontextmenu="showContextMenu(event, 'folder', '{{ carpeta.nombre }}')">
+                    <i class="fas fa-folder file-icon folder-icon"></i>
+                    <div class="file-name">{{ carpeta.nombre }}</div>
+                </div>
+            {% endfor %}
+            
+            <!-- Archivos -->
+            {% for archivo in archivos %}
+                <div class="file-item" data-type="file" data-name="{{ archivo.nombre }}" ondblclick="openFile('{{ archivo.ruta }}')" oncontextmenu="showContextMenu(event, 'file', '{{ archivo.nombre }}')">
+                    <i class="fas fa-file file-icon {% if archivo.nombre|slice:'-4:' == '.pdf' %}pdf{% elif archivo.nombre|slice:'-4:' == '.doc' or archivo.nombre|slice:'-5:' == '.docx' %}doc{% elif archivo.nombre|slice:'-4:' == '.xls' or archivo.nombre|slice:'-5:' == '.xlsx' %}excel{% elif archivo.nombre|slice:'-4:' == '.jpg' or archivo.nombre|slice:'-4:' == '.png' %}image{% endif %}"></i>
+                    <div class="file-name">{{ archivo.nombre }}</div>
+                    <div class="file-size">{{ archivo.tamaño|filesizeformat }}</div>
+                </div>
+            {% endfor %}
+            
+            <!-- Mensaje si está vacío -->
+            {% if not carpetas and not archivos %}
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Esta carpeta está vacía</h5>
+                    <p class="text-muted">Sube archivos o crea nuevas carpetas para comenzar</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div>
+            <span class="me-3">
+                <i class="fas fa-folder me-1"></i>
+                {{ carpetas|length }} carpeta{{ carpetas|length|pluralize }}
+            </span>
+            <span class="me-3">
+                <i class="fas fa-file me-1"></i>
+                {{ archivos|length }} archivo{{ archivos|length|pluralize }}
+            </span>
+        </div>
+        <div>
+            <span>Ruta actual: /{{ ruta_actual|default:"" }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Context Menu -->
+<div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="renameItem()">
+        <i class="fas fa-edit"></i>
+        <span>Renombrar</span>
+    </div>
+    <div class="context-menu-item" onclick="deleteItem()">
+        <i class="fas fa-trash"></i>
+        <span>Eliminar</span>
+    </div>
+    <div class="context-menu-separator"></div>
+    <div class="context-menu-item" onclick="downloadItem()">
+        <i class="fas fa-download"></i>
+        <span>Descargar</span>
+    </div>
+    <div class="context-menu-item" onclick="shareItem()">
+        <i class="fas fa-share"></i>
+        <span>Compartir</span>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-upload me-2"></i>Subir Archivos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="fileInput" class="form-label">Seleccionar archivos</label>
+                        <input type="file" class="form-control" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png,.zip">
+                        <div class="form-text">Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, ZIP</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="uploadDescription" class="form-label">Descripción (opcional)</label>
+                        <textarea class="form-control" id="uploadDescription" rows="3" placeholder="Describe el contenido de los archivos..."></textarea>
+                    </div>
+                    <input type="hidden" id="currentPath" value="{{ ruta_actual }}">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary-custom" onclick="uploadFiles()">
+                    <i class="fas fa-upload me-1"></i>Subir Archivos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Folder Modal -->
+<div class="modal fade" id="createFolderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-folder-plus me-2"></i>Crear Nueva Carpeta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="folderName" class="form-label">Nombre de la carpeta</label>
+                    <input type="text" class="form-control" id="folderName" placeholder="Ingresa el nombre de la carpeta">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary-custom" onclick="createNewFolder()">
+                    <i class="fas fa-folder-plus me-1"></i>Crear Carpeta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPath = '{{ ruta_actual }}';
+let selectedItem = null;
+let contextMenuItem = null;
+let isGridView = true;
+
+// Navigation
+function navigateToPath(path) {
+    window.location.href = `?path=${encodeURIComponent(path)}`;
+}
+
+// File operations
+function openFile(filePath) {
+    window.open(`/media/coresec_documentos/${filePath}`, '_blank');
+}
+
+// Upload functionality
+function showUploadModal() {
+    const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    modal.show();
+}
+
+function uploadFiles() {
+    const fileInput = document.getElementById('fileInput');
+    const files = fileInput.files;
+    
+    if (files.length === 0) {
+        alert('Por favor selecciona al menos un archivo');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    formData.append('path', currentPath);
+    formData.append('description', document.getElementById('uploadDescription').value);
+    
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
+    
+    // Simular subida (aquí iría la llamada AJAX real)
+    setTimeout(() => {
+        bootstrap.Modal.getInstance(document.getElementById('uploadModal')).hide();
+        alert('Archivos subidos exitosamente');
+        refreshExplorer();
+    }, 1000);
+}
+
+// Folder operations
+function createFolder() {
+    const modal = new bootstrap.Modal(document.getElementById('createFolderModal'));
+    modal.show();
+}
+
+function createNewFolder() {
+    const folderName = document.getElementById('folderName').value.trim();
+    
+    if (!folderName) {
+        alert('Por favor ingresa un nombre para la carpeta');
+        return;
+    }
+    
+    // Simular creación de carpeta
+    setTimeout(() => {
+        bootstrap.Modal.getInstance(document.getElementById('createFolderModal')).hide();
+        alert(`Carpeta "${folderName}" creada exitosamente`);
+        refreshExplorer();
+    }, 500);
+}
+
+// Create structure
+function createStructure() {
+    if (confirm('¿Estás seguro de que quieres crear la estructura completa de carpetas CORESEC?')) {
+        // Simular creación de estructura
+        setTimeout(() => {
+            alert('Estructura de carpetas CORESEC creada exitosamente');
+            refreshExplorer();
+        }, 1000);
+    }
+}
+
+// Context menu
+function showContextMenu(event, type, itemName) {
+    event.preventDefault();
+    
+    const contextMenu = document.getElementById('contextMenu');
+    contextMenuItem = { type, name: itemName };
+    
+    contextMenu.style.display = 'block';
+    contextMenu.style.left = event.pageX + 'px';
+    contextMenu.style.top = event.pageY + 'px';
+}
+
+function hideContextMenu() {
+    document.getElementById('contextMenu').style.display = 'none';
+}
+
+// Context menu actions
+function renameItem() {
+    const newName = prompt(`Nuevo nombre para "${contextMenuItem.name}":`, contextMenuItem.name);
+    if (newName && newName !== contextMenuItem.name) {
+        alert(`"${contextMenuItem.name}" renombrado a "${newName}"`);
+        refreshExplorer();
+    }
+    hideContextMenu();
+}
+
+function deleteItem() {
+    if (confirm(`¿Estás seguro de que quieres eliminar "${contextMenuItem.name}"?`)) {
+        alert(`"${contextMenuItem.name}" eliminado exitosamente`);
+        refreshExplorer();
+    }
+    hideContextMenu();
+}
+
+function downloadItem() {
+    if (contextMenuItem.type === 'file') {
+        alert(`Descargando "${contextMenuItem.name}"`);
+    } else {
+        alert('No se pueden descargar carpetas');
+    }
+    hideContextMenu();
+}
+
+function shareItem() {
+    alert(`Compartiendo "${contextMenuItem.name}"`);
+    hideContextMenu();
+}
+
+// View toggle
+function toggleView() {
+    isGridView = !isGridView;
+    const fileGrid = document.getElementById('fileGrid');
+    const icon = document.getElementById('viewToggleIcon');
+    
+    if (isGridView) {
+        fileGrid.className = 'file-grid';
+        icon.className = 'fas fa-th';
+    } else {
+        fileGrid.className = 'file-list';
+        icon.className = 'fas fa-list';
+    }
+}
+
+// Refresh
+function refreshExplorer() {
+    window.location.reload();
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const fileItems = document.querySelectorAll('.file-item');
+    
+    fileItems.forEach(item => {
+        const fileName = item.dataset.name.toLowerCase();
+        if (fileName.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+});
+
+// Drag and drop
+const uploadZone = document.getElementById('uploadZone');
+
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    uploadZone.style.display = 'block';
+    uploadZone.classList.add('dragover');
+});
+
+document.addEventListener('dragleave', function(e) {
+    if (!e.relatedTarget) {
+        uploadZone.classList.remove('dragover');
+        setTimeout(() => {
+            uploadZone.style.display = 'none';
+        }, 100);
+    }
+});
+
+document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    uploadZone.style.display = 'none';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        // Simular subida de archivos arrastrados
+        alert(`${files.length} archivo(s) subido(s) exitosamente`);
+        refreshExplorer();
+    }
+});
+
+// Hide context menu on click outside
+document.addEventListener('click', hideContextMenu);
+
+// File selection
+document.querySelectorAll('.file-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        if (!e.ctrlKey) {
+            document.querySelectorAll('.file-item.selected').forEach(selected => {
+                selected.classList.remove('selected');
+            });
+        }
+        this.classList.toggle('selected');
+        selectedItem = this;
+    });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey) {
+        switch(e.key) {
+            case 'u':
+                e.preventDefault();
+                showUploadModal();
+                break;
+            case 'n':
+                e.preventDefault();
+                createFolder();
+                break;
+            case 'r':
+                e.preventDefault();
+                refreshExplorer();
+                break;
+        }
+    }
+});
+</script>
+{% endblock %}

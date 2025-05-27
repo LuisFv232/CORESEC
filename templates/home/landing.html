@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORESEC Huánuco - Sistema de Gestión de Informes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1DB178;
+            --secondary-color: #16a065;
+            --accent-color: #0d4a35;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 4rem 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero-content {
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero-logo-wrapper {
+            position: relative;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .hero-logo-wrapper:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .logo-coresec {
+            height: 140px;
+            filter: brightness(1.2) contrast(1.1) drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
+        }
+
+        .hero-logo-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hero-logo-wrapper:hover .hero-logo-glow {
+            opacity: 1;
+        }
+        
+        .btn-hero {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            color: var(--primary-color);
+        }
+        
+        .btn-hero.outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-hero.outline:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+        
+        .features-section {
+            padding: 4rem 0;
+            background: #f8f9fa;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+        }
+        
+        .stats-section {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            color: white;
+            padding: 3rem 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .about-section {
+            padding: 4rem 0;
+        }
+        
+        .navbar-custom {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+        }
+        
+        .nav-link {
+            color: var(--accent-color) !important;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .logo-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .logo-coresec {
+                height: 100px;
+            }
+            
+            .hero-logo-wrapper {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-shield-alt me-2"></i>CORESEC
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#inicio">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#caracteristicas">Características</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#estadisticas">Estadísticas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#acerca">Acerca de</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <span class="nav-link">Hola, {{ user.get_full_name|default:user.username }}</span>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'usuarios:login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'usuarios:registro' %}">
+                                <i class="fas fa-user-plus me-1"></i>Registrarse
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="logo-container">
+                    <div class="hero-logo-wrapper">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ed6e7ee6-d0c2-4af7-90b5-12e06ae9843c.jfif-26CKa0VYx7mtxDTdhjRc4iuuecWFY5.jpeg" alt="CORESEC" class="logo-coresec">
+                        <div class="hero-logo-glow"></div>
+                    </div>
+                </div>
+                
+                <h1 class="hero-title">CORESEC HUÁNUCO</h1>
+                <p class="hero-subtitle">
+                    Sistema Integral de Gestión de Informes y Reportes<br>
+                    Comité Regional de Seguridad Ciudadana
+                </p>
+                
+                <div class="mt-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard:dashboard' %}" class="btn-hero">
+                            <i class="fas fa-tachometer-alt me-2"></i>Ir al Dashboard
+                        </a>
+                        <a href="{% url 'reportes:lista_informes' %}" class="btn-hero outline">
+                            <i class="fas fa-file-alt me-2"></i>Ver Informes
+                        </a>
+                    {% else %}
+                        <a href="{% url 'usuarios:login' %}" class="btn-hero">
+                            <i class="fas fa-sign-in-alt me-2"></i>Acceder al Sistema
+                        </a>
+                        <a href="{% url 'usuarios:registro' %}" class="btn-hero outline">
+                            <i class="fas fa-user-plus me-2"></i>Registrarse
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="caracteristicas" class="features-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold">Características del Sistema</h2>
+                <p class="lead">Herramientas modernas para una gestión eficiente</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h4>Subida de Informes</h4>
+                        <p>Sistema intuitivo para cargar y gestionar informes de seguridad ciudadana de manera rápida y segura.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <h4>Reportes y Estadísticas</h4>
+                        <p>Visualización de datos en tiempo real con gráficos interactivos y reportes detallados por municipalidad.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Gestión de Usuarios</h4>
+                        <p>Control completo de usuarios por municipalidad con diferentes niveles de acceso y permisos.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h4>Notificaciones</h4>
+                        <p>Sistema de alertas automáticas para mantener informados a todos los usuarios sobre cambios importantes.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Seguridad</h4>
+                        <p>Protección avanzada de datos con encriptación y control de acceso basado en roles.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4>Acceso Móvil</h4>
+                        <p>Interfaz responsive que permite acceder al sistema desde cualquier dispositivo móvil o tablet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="estadisticas" class="stats-section">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="display-4 fw-bold">Estadísticas del Sistema</h2>
+                <p class="lead">Datos actualizados del sistema CORESEC</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_municipalidades|default:11 }}</div>
+                        <div class="stat-label">Municipalidades</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_usuarios|default:0 }}</div>
+                        <div class="stat-label">Usuarios Registrados</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_informes|default:0 }}</div>
+                        <div class="stat-label">Informes Procesados</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">Disponibilidad</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="acerca" class="about-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="display-4 fw-bold mb-4">Acerca de CORESEC</h2>
+                    <p class="lead">
+                        El Comité Regional de Seguridad Ciudadana de Huánuco es el órgano encargado de 
+                        coordinar las políticas de seguridad ciudadana en la región.
+                    </p>
+                    <p>
+                        Nuestro sistema digital permite una gestión eficiente de los informes de seguridad 
+                        de todas las municipalidades de la región, facilitando la toma de decisiones 
+                        basada en datos actualizados y confiables.
+                    </p>
+                    <div class="mt-4">
+                        <h5>Municipalidades Participantes:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Huamalíes</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Huacaybamba</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Leoncio Prado</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Yarowilca</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Pachitea</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Marañón</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Ambo</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Lauricocha</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Huánuco</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Puerto Inca</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Dos de Mayo</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-center">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ed6e7ee6-d0c2-4af7-90b5-12e06ae9843c.jfif-26CKa0VYx7mtxDTdhjRc4iuuecWFY5.jpeg" alt="CORESEC" class="img-fluid" style="max-width: 400px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>CORESEC Huánuco</h5>
+                    <p>Sistema de Gestión de Informes de Seguridad Ciudadana</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2024 Gobierno Regional de Huánuco. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Navbar background on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar-custom');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255,255,255,0.98)';
+            } else {
+                navbar.style.background = 'rgba(255,255,255,0.95)';
+            }
+        });
+    </script>
+</body>
+</html>

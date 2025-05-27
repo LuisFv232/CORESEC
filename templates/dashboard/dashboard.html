@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">Dashboard</div>
+<div class="page-subtitle">
+    Bienvenido al panel de control de CORESEC - 
+    {% if user.tipo_usuario == 'municipal' %}
+        Municipalidad de {{ user.get_municipalidad_display }}
+    {% else %}
+        {{ user.get_cargo_display }}
+    {% endif %}
+</div>
+
+<div class="stats-grid">
+    {% if user.tipo_usuario in 'administrador,coordinador' %}
+        <!-- Vista para Administradores y Coordinadores -->
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ informes_pendientes|default:0 }}</div>
+            <div class="stat-label">Informes Pendientes</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-number">{{ informes_aprobados|default:0 }}</div>
+            <div class="stat-label">Informes Aprobados</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number">{{ informes_observados|default:0 }}</div>
+            <div class="stat-label">Con Observaciones</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-number">{{ total_informes|default:0 }}</div>
+            <div class="stat-label">Total de Informes</div>
+        </div>
+    {% else %}
+        <!-- Vista para Usuarios Municipales -->
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ mis_pendientes|default:0 }}</div>
+            <div class="stat-label">Informes Pendientes</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="stat-number">{{ mis_aprobados|default:0 }}</div>
+            <div class="stat-label">Informes Aprobados</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon danger">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-number">{{ mis_observados|default:0 }}</div>
+            <div class="stat-label">Con Observaciones</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-number">{{ mis_informes|default:0 }}</div>
+            <div class="stat-label">Total de Informes</div>
+        </div>
+    {% endif %}
+</div>
+
+{% if user.tipo_usuario in 'administrador,coordinador' %}
+<!-- Gráficos Estadísticos Avanzados -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Informes por Estado
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="estadosChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Informes por Tipo
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="tiposChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Evolución Mensual de Informes
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolucionChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>Top Municipalidades
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="municipalidadesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Sección de Informes Recientes -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Informes Recientes</h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-light active">Informes Recientes</button>
+                    <button type="button" class="btn btn-sm btn-outline-light">Pendientes</button>
+                    <button type="button" class="btn btn-sm btn-outline-light">Con Observaciones</button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if informes_recientes %}
+                    {% for informe in informes_recientes %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ informe.titulo }}</h6>
+                                <small class="text-muted">
+                                    {% if user.tipo_usuario in 'administrador,coordinador' %}
+                                        {{ informe.usuario.get_municipalidad_display }} - 
+                                    {% endif %}
+                                    {{ informe.fecha_creacion|date:"d/m/Y" }}
+                                </small>
+                            </div>
+                            <span class="badge bg-{{ informe.estado|default:'secondary' }}">
+                                {{ informe.get_estado_display }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay informes disponibles</p>
+                        <p class="text-muted small">No se encontraron informes en el sistema. Comience subiendo un nuevo informe.</p>
+                        <a href="{% url 'reportes:crear_informe' %}" class="btn btn-primary-custom">
+                            <i class="fas fa-upload me-2"></i>Subir Informe
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'reportes:crear_informe' %}" class="btn btn-primary-custom">
+                        <i class="fas fa-upload me-2"></i>Subir Informe
+                    </a>
+                    <a href="{% url 'reportes:lista_informes' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Ver Reportes
+                    </a>
+                    {% if user.tipo_usuario in 'administrador,coordinador' %}
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="fas fa-users me-2"></i>Gestionar Usuarios
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if user.tipo_usuario in 'administrador,coordinador' %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Cambiar a Coordinador</h5>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Cambia tu vista a modo coordinador para una experiencia diferente.</p>
+                <button class="btn btn-outline-primary btn-sm w-100">Cambiar a Coordinador</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if user.tipo_usuario in 'administrador,coordinador' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configuración de colores
+const primaryColor = '#1DB178';
+const secondaryColor = '#16a065';
+const colors = [primaryColor, secondaryColor, '#ffc107', '#dc3545', '#17a2b8', '#6f42c1'];
+
+// Gráfico de Estados
+const estadosCtx = document.getElementById('estadosChart').getContext('2d');
+new Chart(estadosCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pendientes', 'En Revisión', 'Aprobados', 'Observados', 'Atendidos'],
+        datasets: [{
+            data: [
+                {{ informes_pendientes|default:0 }},
+                {{ informes_revision|default:0 }},
+                {{ informes_aprobados|default:0 }},
+                {{ informes_observados|default:0 }},
+                {{ informes_atendidos|default:0 }}
+            ],
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Gráfico de Tipos (datos de ejemplo - deberías pasarlos desde el view)
+const tiposCtx = document.getElementById('tiposChart').getContext('2d');
+new Chart(tiposCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Mensual', 'Trimestral', 'Anual', 'Especial'],
+        datasets: [{
+            label: 'Cantidad',
+            data: [25, 15, 8, 12], // Datos de ejemplo
+            backgroundColor: primaryColor,
+            borderColor: secondaryColor,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Gráfico de Evolución Mensual
+const evolucionCtx = document.getElementById('evolucionChart').getContext('2d');
+new Chart(evolucionCtx, {
+    type: 'line',
+    data: {
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Informes Recibidos',
+            data: [12, 19, 15, 25, 22, 30], // Datos de ejemplo
+            borderColor: primaryColor,
+            backgroundColor: primaryColor + '20',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Gráfico de Municipalidades
+const municipalidadesCtx = document.getElementById('municipalidadesChart').getContext('2d');
+new Chart(municipalidadesCtx, {
+    type: 'horizontalBar',
+    data: {
+        labels: ['Huánuco', 'Amarilis', 'Pillco Marca', 'Churubamba'],
+        datasets: [{
+            label: 'Informes',
+            data: [45, 32, 28, 15], // Datos de ejemplo
+            backgroundColor: [primaryColor, secondaryColor, '#ffc107', '#17a2b8'],
+        }]
+    },
+    options: {
+        responsive: true,
+        indexAxis: 'y',
+        scales: {
+            x: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

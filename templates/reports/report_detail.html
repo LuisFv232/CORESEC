@@ -1,0 +1,181 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}{{ report.title }} - ITCA360{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex-1 p-6 animate-fade-in">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center mb-6">
+            <a href="{% url 'report_list' %}" class="mr-4 text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900">{{ report.title }}</h1>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Cabecera del informe -->
+            <div class="p-6 bg-green-custom text-white">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">{{ report.get_report_type_display }}</h2>
+                        <p class="text-green-100">{{ report.municipality }} - {{ report.year }}
+                            {% if report.trimester %} - {{ report.get_trimester_display }}{% endif %}
+                        </p>
+                    </div>
+                    <span class="mt-2 md:mt-0 px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                        {% if report.status == 'APPROVED' %}bg-green-800 text-green-100
+                        {% elif report.status == 'REJECTED' %}bg-red-800 text-red-100
+                        {% elif report.status == 'ANALYZING' %}bg-yellow-800 text-yellow-100
+                        {% else %}bg-gray-800 text-gray-100{% endif %}">
+                        {{ report.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Detalles del informe -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">Información del Informe</h3>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Título:</span> {{ report.title }}</p>
+                            <p><span class="font-medium">Tipo:</span> {{ report.get_report_type_display }}</p>
+                            <p><span class="font-medium">Municipalidad:</span> {{ report.municipality }}</p>
+                            <p><span class="font-medium">Año:</span> {{ report.year }}</p>
+                            {% if report.trimester %}
+                            <p><span class="font-medium">Trimestre:</span> {{ report.get_trimester_display }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">Información de Subida</h3>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Subido por:</span> {{ report.uploaded_by.get_full_name|default:report.uploaded_by.username }}</p>
+                            <p><span class="font-medium">Fecha de subida:</span> {{ report.upload_date|date:"d/m/Y H:i" }}</p>
+                            <p><span class="font-medium">Última modificación:</span> {{ report.last_modified|date:"d/m/Y H:i" }}</p>
+                            <p><span class="font-medium">Estado:</span> 
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if report.status == 'APPROVED' %}bg-green-100 text-green-800
+                                    {% elif report.status == 'REJECTED' %}bg-red-100 text-red-800
+                                    {% elif report.status == 'ANALYZING' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ report.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Descripción -->
+                {% if report.description %}
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Descripción</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-700 whitespace-pre-line">{{ report.description }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Archivos -->
+                <div class="border-t pt-6">
+                    <h3 class="text-lg font-semibold mb-4">Archivos</h3>
+                    
+                    <div class="space-y-4">
+                        <!-- Archivo principal -->
+                        <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                            <div class="flex items-center">
+                                {% with ext=report.file1.name|slice:"-4:" %}
+                                    {% if ext == '.pdf' %}
+                                        <svg class="w-8 h-8 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                            <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                        </svg>
+                                    {% elif ext == 'docx' or ext == '.doc' %}
+                                        <svg class="w-8 h-8 text-blue-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                            <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                        </svg>
+                                    {% elif ext == 'xlsx' or ext == '.xls' %}
+                                        <svg class="w-8 h-8 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                            <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                        </svg>
+                                    {% else %}
+                                        <svg class="w-8 h-8 text-gray-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                            <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                        </svg>
+                                    {% endif %}
+                                {% endwith %}
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Archivo Principal</p>
+                                    <p class="text-xs text-gray-500">{{ report.file1.name|slice:"8:" }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ report.file1.url }}" target="_blank" class="bg-green-custom hover:bg-green-light text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                Descargar
+                            </a>
+                        </div>
+                        
+                        <!-- Archivos adicionales -->
+                        {% for label, file in report.get_additional_files %}
+                            <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                                <div class="flex items-center">
+                                    {% with ext=file.name|slice:"-4:" %}
+                                        {% if ext == '.pdf' %}
+                                            <svg class="w-8 h-8 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                                <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                            </svg>
+                                        {% elif ext == 'docx' or ext == '.doc' %}
+                                            <svg class="w-8 h-8 text-blue-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                                <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                            </svg>
+                                        {% elif ext == 'xlsx' or ext == '.xls' %}
+                                            <svg class="w-8 h-8 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                                <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                            </svg>
+                                        {% else %}
+                                            <svg class="w-8 h-8 text-gray-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"></path>
+                                                <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                            </svg>
+                                        {% endif %}
+                                    {% endwith %}
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ label }}</p>
+                                        <p class="text-xs text-gray-500">{{ file.name|slice:"8:" }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ file.url }}" target="_blank" class="bg-green-custom hover:bg-green-light text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Descargar
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="border-t pt-6 mt-6 flex justify-end">
+                    <div class="flex space-x-3">
+                        <a href="{% url 'report_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">
+                            Volver
+                        </a>
+                        
+                        {% if user.role != 'MUNICIPAL_MANAGER' %}
+                        <a href="{% url 'report_analysis' report.id %}" class="bg-green-custom hover:bg-green-light text-white font-bold py-2 px-6 rounded-lg transition-colors transform hover:scale-105">
+                            Ver Análisis
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

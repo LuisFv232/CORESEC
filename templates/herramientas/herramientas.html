@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}Herramientas - CORESEC{% endblock %}
+
+{% block content %}
+<div class="page-title">Herramientas</div>
+<div class="page-subtitle">Accede a recursos útiles y herramientas para tu trabajo</div>
+
+<!-- Quick Tools Section -->
+<div class="mb-5">
+    <h4 class="mb-4"><i class="fas fa-bolt me-2"></i>Herramientas Rápidas</h4>
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-icon primary mb-3">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h5>Gestión de Información</h5>
+                    <p class="text-muted">Organiza y gestiona documentos con explorador de archivos avanzado.</p>
+                    <a href="{% url 'herramientas:gestion_informacion' %}" class="btn btn-primary-custom">
+                        <i class="fas fa-external-link-alt me-1"></i>Abrir
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-icon success mb-3">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h5>Calculadora de Notas</h5>
+                    <p class="text-muted">Calcula promedios y notas finales de manera rápida y precisa.</p>
+                    <button class="btn btn-primary-custom" onclick="abrirCalculadora()">
+                        <i class="fas fa-external-link-alt me-1"></i>Abrir
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-icon warning mb-3">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h5>Calendario Académico</h5>
+                    <p class="text-muted">Consulta fechas importantes del calendario académico institucional.</p>
+                    <button class="btn btn-primary-custom" onclick="abrirCalendario()">
+                        <i class="fas fa-external-link-alt me-1"></i>Ver Calendario
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="stat-icon info mb-3">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h5>Generador de Reportes</h5>
+                    <p class="text-muted">Genera reportes estadísticos y gráficos personalizados.</p>
+                    <button class="btn btn-primary-custom" onclick="abrirGeneradorReportes()">
+                        <i class="fas fa-external-link-alt me-1"></i>Generar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Documents Section -->
+<div class="mb-5">
+    <h4 class="mb-4"><i class="fas fa-file-alt me-2"></i>Documentos y Recursos</h4>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-book me-2"></i>Manuales y Guías</h6>
+                </div>
+                <div class="card-body">
+                    {% if documentos_manuales %}
+                        {% for documento in documentos_manuales %}
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-1">{{ documento.titulo }}</h6>
+                                    <small class="text-muted">{{ documento.descripcion|truncatewords:10 }}</small>
+                                </div>
+                                <a href="{{ documento.archivo.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">Manual de Usuario</h6>
+                                <small class="text-muted">Guía completa para usar CORESEC</small>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <h6 class="mb-1">Guía de Reportes</h6>
+                                <small class="text-muted">Cómo crear y gestionar reportes efectivos</small>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Formularios</h6>
+                </div>
+                <div class="card-body">
+                    {% if documentos_formularios %}
+                        {% for documento in documentos_formularios %}
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <h6 class="mb-1">{{ documento.titulo }}</h6>
+                                    <small class="text-muted">{{ documento.descripcion|truncatewords:10 }}</small>
+                                </div>
+                                <a href="{{ documento.archivo.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">Solicitud de Cambio</h6>
+                                <small class="text-muted">Formulario para solicitar cambios académicos</small>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <h6 class="mb-1">Evaluación de Desempeño</h6>
+                                <small class="text-muted">Formulario de evaluación institucional</small>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- External Links Section -->
+<div class="mb-5">
+    <h4 class="mb-4"><i class="fas fa-link me-2"></i>Enlaces Útiles</h4>
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="stat-icon info mb-3">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h6>Portal CORESEC</h6>
+                    <a href="https://www.coresec.gob.pe" target="_blank" class="btn btn-primary-custom btn-sm">
+                        <i class="fas fa-external-link-alt me-1"></i>Visitar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="stat-icon secondary mb-3">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h6>Correo Institucional</h6>
+                    <a href="mailto:info@coresec.gob.pe" class="btn btn-primary-custom btn-sm">
+                        <i class="fas fa-envelope me-1"></i>Contactar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="stat-icon primary mb-3">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h6>Centro de Ayuda</h6>
+                    <button class="btn btn-primary-custom btn-sm" onclick="abrirAyuda()">
+                        <i class="fas fa-question-circle me-1"></i>Ayuda
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <div class="stat-icon success mb-3">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h6>Soporte Técnico</h6>
+                    <a href="tel:+50325550000" class="btn btn-primary-custom btn-sm">
+                        <i class="fas fa-phone me-1"></i>Llamar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Calculadora -->
+<div class="modal fade" id="calculadoraModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-calculator me-2"></i>Calculadora de Notas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nota 1 (30%)</label>
+                    <input type="number" class="form-control" id="nota1" min="0" max="10" step="0.1">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nota 2 (30%)</label>
+                    <input type="number" class="form-control" id="nota2" min="0" max="10" step="0.1">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nota 3 (40%)</label>
+                    <input type="number" class="form-control" id="nota3" min="0" max="10" step="0.1">
+                </div>
+                <div class="alert alert-info">
+                    <strong>Promedio: </strong><span id="promedio">0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="calcularPromedio()">Calcular</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function abrirCalculadora() {
+    var modal = new bootstrap.Modal(document.getElementById('calculadoraModal'));
+    modal.show();
+}
+
+function calcularPromedio() {
+    var nota1 = parseFloat(document.getElementById('nota1').value) || 0;
+    var nota2 = parseFloat(document.getElementById('nota2').value) || 0;
+    var nota3 = parseFloat(document.getElementById('nota3').value) || 0;
+    
+    var promedio = (nota1 * 0.3) + (nota2 * 0.3) + (nota3 * 0.4);
+    document.getElementById('promedio').textContent = promedio.toFixed(2);
+}
+
+function abrirCalendario() {
+    alert('Funcionalidad de calendario en desarrollo');
+}
+
+function abrirGeneradorReportes() {
+    alert('Funcionalidad de generador de reportes en desarrollo');
+}
+
+function abrirAyuda() {
+    alert('Centro de ayuda en desarrollo');
+}
+
+// Auto-calcular cuando se cambian los valores
+document.addEventListener('DOMContentLoaded', function() {
+    ['nota1', 'nota2', 'nota3'].forEach(function(id) {
+        var element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', calcularPromedio);
+        }
+    });
+});
+</script>
+{% endblock %}

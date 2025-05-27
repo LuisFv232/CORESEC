@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Usuario - CORESEC{% endblock %}
+
+{% block content %}
+<div class="page-title">Crear Nuevo Usuario</div>
+<div class="page-subtitle">Añade un nuevo usuario al sistema CORESEC</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Usuario</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Nombre
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Apellido
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    <i class="fas fa-at me-1"></i>Nombre de Usuario
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                    <i class="fas fa-lock me-1"></i>Contraseña
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="text-danger small">{{ form.password1.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                    <i class="fas fa-lock me-1"></i>Confirmar Contraseña
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="text-danger small">{{ form.password2.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.telefono.id_for_label }}" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Teléfono
+                                </label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger small">{{ form.telefono.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.tipo_usuario.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user-tag me-1"></i>Tipo de Usuario
+                                </label>
+                                {{ form.tipo_usuario }}
+                                {% if form.tipo_usuario.errors %}
+                                    <div class="text-danger small">{{ form.tipo_usuario.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.direccion.id_for_label }}" class="form-label">
+                            <i class="fas fa-home me-1"></i>Dirección
+                        </label>
+                        {{ form.direccion }}
+                        {% if form.direccion.errors %}
+                            <div class="text-danger small">{{ form.direccion.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.municipalidad.id_for_label }}" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Municipalidad
+                                </label>
+                                {{ form.municipalidad }}
+                                {% if form.municipalidad.errors %}
+                                    <div class="text-danger small">{{ form.municipalidad.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.cargo_municipal.id_for_label }}" class="form-label">
+                                    <i class="fas fa-briefcase me-1"></i>Cargo Municipal
+                                </label>
+                                {{ form.cargo_municipal }}
+                                {% if form.cargo_municipal.errors %}
+                                    <div class="text-danger small">{{ form.cargo_municipal.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.cargo_coresec.id_for_label }}" class="form-label">
+                            <i class="fas fa-briefcase me-1"></i>Cargo en CORESEC
+                        </label>
+                        {{ form.cargo_coresec }}
+                        {% if form.cargo_coresec.errors %}
+                            <div class="text-danger small">{{ form.cargo_coresec.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'usuarios:gestion_usuarios' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Crear Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

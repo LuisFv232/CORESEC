@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Informes - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">Informes y Reportes</div>
+<div class="page-subtitle">Gestiona y da seguimiento a los informes municipales</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tipo de Informe</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos los tipos</option>
+                    {% for tipo in tipos_informe %}
+                        <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.get_nombre_display }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente" {% if request.GET.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+                    <option value="en_revision" {% if request.GET.estado == "en_revision" %}selected{% endif %}>En Revisión</option>
+                    <option value="aprobado" {% if request.GET.estado == "aprobado" %}selected{% endif %}>Aprobado</option>
+                    <option value="rechazado" {% if request.GET.estado == "rechazado" %}selected{% endif %}>Rechazado</option>
+                    <option value="requiere_correccion" {% if request.GET.estado == "requiere_correccion" %}selected{% endif %}>Requiere Corrección</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar por título o descripción..." value="{{ request.GET.buscar }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Informes -->
+{% if informes %}
+    <div class="row">
+        {% for informe in informes %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title">{{ informe.titulo|truncatechars:50 }}</h6>
+                            {% if informe.estado == 'pendiente' %}
+                                <span class="badge bg-warning">Pendiente</span>
+                            {% elif informe.estado == 'en_revision' %}
+                                <span class="badge bg-info">En Revisión</span>
+                            {% elif informe.estado == 'aprobado' %}
+                                <span class="badge bg-success">Aprobado</span>
+                            {% elif informe.estado == 'rechazado' %}
+                                <span class="badge bg-danger">Rechazado</span>
+                            {% else %}
+                                <span class="badge bg-warning">Requiere Corrección</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="card-text text-muted small">{{ informe.descripcion|truncatewords:15 }}</p>
+                        
+                        <div class="small text-muted mb-2">
+                            <div><i class="fas fa-tag me-1"></i>{{ informe.tipo.get_nombre_display }}</div>
+                            <div><i class="fas fa-calendar me-1"></i>{{ informe.get_periodo_display }}</div>
+                            <div><i class="fas fa-user me-1"></i>{{ informe.usuario.get_full_name|default:informe.usuario.username }}</div>
+                            <div><i class="fas fa-clock me-1"></i>{{ informe.fecha_subida|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'reportes:detalle_informe' informe.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>Ver Detalle
+                            </a>
+                            {% if informe.archivo_adjunto %}
+                                <a href="{{ informe.archivo_adjunto.url }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                                    <i class="fas fa-download me-1"></i>Descargar
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginación -->
+    {% if is_paginated %}
+        <nav aria-label="Paginación de informes" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="card text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No hay informes</h4>
+            <p class="text-muted">No se encontraron informes con los filtros aplicados</p>
+            <a href="{% url 'reportes:crear_informe' %}" class="btn btn-primary-custom">
+                <i class="fas fa-plus me-2"></i>Crear Primer Informe
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
