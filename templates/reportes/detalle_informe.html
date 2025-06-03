@@ -35,7 +35,7 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Usuario:</strong> {{ informe.usuario.get_full_name|default:informe.usuario.username }}
@@ -44,7 +44,7 @@
                         <strong>Municipalidad:</strong> {{ informe.usuario.get_municipalidad_display|default:"N/A" }}
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Período:</strong> {{ informe.get_periodo_display }}
@@ -53,23 +53,23 @@
                         <strong>Fecha de Subida:</strong> {{ informe.fecha_subida|date:"d/m/Y H:i" }}
                     </div>
                 </div>
-                
+
                 {% if informe.informe_padre %}
                 <div class="row mb-3">
                     <div class="col-12">
-                        <strong>Informe Padre:</strong> 
+                        <strong>Informe Padre:</strong>
                         <a href="{% url 'reportes:detalle_informe' informe.informe_padre.id %}">
                             {{ informe.informe_padre.titulo }}
                         </a>
                     </div>
                 </div>
                 {% endif %}
-                
+
                 <div class="mb-3">
                     <strong>Descripción:</strong>
                     <p class="mt-2">{{ informe.descripcion }}</p>
                 </div>
-                
+
                 {% if informe.archivo_adjunto %}
                 <div class="mb-3">
                     <strong>Archivo Adjunto:</strong>
@@ -82,7 +82,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Respuestas -->
         {% if respuestas %}
         <div class="card mt-4">
@@ -110,7 +110,7 @@
         </div>
         {% endif %}
     </div>
-    
+
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
@@ -123,28 +123,31 @@
                     <a href="{% url 'reportes:lista_informes' %}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Volver a la Lista
                     </a>
-                    
+
                     {% if informe.archivo_adjunto %}
                     <a href="{{ informe.archivo_adjunto.url }}" class="btn btn-outline-primary" target="_blank">
                         <i class="fas fa-download me-2"></i>Descargar Archivo
                     </a>
                     {% endif %}
-                    
+
                     {% if user.tipo_usuario in 'administrador,coordinador' %}
-                    <a href="{% url 'reportes:responder_informe' informe.id %}" class="btn btn-primary-custom">
+                    <a href="{% url 'reportes:responder_informe' informe.id %}" class="btn btn-primary-custom" onclick="responderInforme({{ informe.id }})">
                         <i class="fas fa-reply me-2"></i>Responder
                     </a>
-                    
+
                     {% if informe.estado == 'pendiente' %}
-                    <button class="btn btn-outline-warning" onclick="cambiarEstado({{ informe.id }})">
-                        <i class="fas fa-edit me-2"></i>Cambiar Estado
+                    <button class="btn btn-outline-success me-1" onclick="cambiarEstado({{ informe.id }}, 'aprobado')" style="margin-bottom: 5px;">
+                        <i class="fas fa-check me-2"></i>Aprobar
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="cambiarEstado({{ informe.id }}, 'rechazado')">
+                        <i class="fas fa-times me-2"></i>Rechazar
                     </button>
                     {% endif %}
                     {% endif %}
                 </div>
             </div>
         </div>
-        
+
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="mb-0">
@@ -156,7 +159,7 @@
                     <strong>Última Actualización:</strong><br>
                     {{ informe.fecha_actualizacion|date:"d/m/Y H:i" }}
                 </small>
-                
+
                 {% if informe.respuestas_its.exists %}
                 <hr>
                 <small class="text-muted">
@@ -172,48 +175,139 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirmar Acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmModalBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function cambiarEstado(informeId) {
-    const estados = {
-        'en_revision': 'En Revisión',
-        'aprobado': 'Aprobado',
-        'rechazado': 'Rechazado',
-        'requiere_correccion': 'Requiere Corrección'
+let currentAction = null;
+let currentInformeId = null;
+
+function cambiarEstado(informeId, nuevoEstado) {
+    currentInformeId = informeId;
+    currentAction = () => {
+        ejecutarCambioEstado(informeId, nuevoEstado);
     };
-    
-    let opciones = 'Selecciona el nuevo estado:\n';
-    for (const [key, value] of Object.entries(estados)) {
-        opciones += `${key}: ${value}\n`;
-    }
-    
-    const nuevoEstado = prompt(opciones + '\nEscribe el estado:');
-    
-    if (nuevoEstado && Object.keys(estados).includes(nuevoEstado)) {
-        fetch(`/reportes/${informeId}/cambiar-estado/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `estado=${nuevoEstado}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cambiar el estado');
-        });
-    }
+
+    const estadoTexto = nuevoEstado === 'aprobado' ? 'aprobar' : 'rechazar';
+    const modalBody = document.getElementById('confirmModalBody');
+    modalBody.innerHTML = `¿Estás seguro de que quieres ${estadoTexto} este informe?`;
+
+    const confirmButton = document.getElementById('confirmButton');
+    confirmButton.className = nuevoEstado === 'aprobado' ? 'btn btn-success' : 'btn btn-danger';
+    confirmButton.textContent = nuevoEstado === 'aprobado' ? 'Aprobar' : 'Rechazar';
+
+    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+    modal.show();
 }
+
+function ejecutarCambioEstado(informeId, nuevoEstado) {
+    fetch(`/reportes/${informeId}/cambiar-estado/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar mensaje de éxito
+            mostrarMensaje('Estado cambiado exitosamente', 'success');
+            // Recargar la página después de un breve delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            mostrarMensaje('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarMensaje('Error al cambiar el estado', 'danger');
+    });
+}
+
+function responderInforme(informeId) {
+    // Primero cambiar el estado a 'requiere_correccion'
+    fetch(`/reportes/${informeId}/cambiar-estado/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            estado: 'requiere_correccion'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirigir a la página de respuesta
+            window.location.href = `/reportes/${informeId}/responder/`;
+        } else {
+            mostrarMensaje('Error: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        mostrarMensaje('Error al procesar la respuesta', 'danger');
+    });
+
+    // Prevenir el comportamiento por defecto del enlace
+    return false;
+}
+
+function mostrarMensaje(mensaje, tipo) {
+    // Crear el elemento de alerta
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    // Insertar al principio del contenido principal
+    const mainContent = document.querySelector('.row');
+    mainContent.insertBefore(alertDiv, mainContent.firstChild);
+
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Event listener para el botón de confirmación del modal
+document.getElementById('confirmButton').addEventListener('click', function() {
+    if (currentAction) {
+        currentAction();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+        modal.hide();
+    }
+});
 </script>
 
 <!-- CSRF Token para AJAX -->
