@@ -1,6 +1,8 @@
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import FileExtensionValidator
+from django.utils import timezone
 import os
 from datetime import datetime
 
@@ -139,22 +141,136 @@ class Informe(models.Model):
             return f"Año {self.año}"
         return f"Año {self.año}"
 
+
+class TipoDocumentoRespuesta(models.Model):
+    TIPOS_RESPUESTA_CHOICES = [
+        ('oficio', 'Oficio'),
+        ('memorando', 'Memorando'),
+        ('carta', 'Carta'),
+        ('informe_tecnico', 'Informe Técnico'),
+        ('acta', 'Acta'),
+        ('resolucion', 'Resolución'),
+        ('dictamen', 'Dictamen'),
+        ('notificacion', 'Notificación'),
+        ('otro', 'Otro Documento'),
+    ]
+
+    nombre = models.CharField(max_length=50, choices=TIPOS_RESPUESTA_CHOICES, unique=True)
+    descripcion = models.TextField()
+    prefijo_carpeta = models.CharField(max_length=20, help_text="Prefijo para la carpeta (ej: OFICIOS, MEMORANDOS)")
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Tipo de Documento de Respuesta"
+        verbose_name_plural = "Tipos de Documentos de Respuesta"
+
+    def __str__(self):
+        return self.get_nombre_display()
+
+
+# FUNCIÓN MEJORADA para upload de respuestas
+def upload_respuesta_to_structured_path(instance, filename):
+    """Genera la ruta estructurada para guardar respuestas de informes"""
+    informe = instance.informe
+    tipo_documento = instance.tipo_documento
+
+    # Validar que exista el informe y tipo de documento
+    if not informe or not tipo_documento:
+        raise ValueError("Falta información requerida para generar la ruta de almacenamiento")
+
+    # Usar la municipalidad del INFORME ORIGINAL
+    municipalidad = informe.usuario.get_municipalidad_display()
+    tipo_informe = informe.tipo.nombre.upper()
+    año = str(informe.año)
+
+    # Crear la ruta base igual que el informe original
+    path_parts = ['INFORMES', municipalidad, tipo_informe, año]
+
+    # Agregar período según el tipo del informe original
+    if informe.tipo.nombre == 'itca' and informe.trimestre:
+        trimestre_map = {
+            1: 'PRIMER_TRIMESTRE',
+            2: 'SEGUNDO_TRIMESTRE',
+            3: 'TERCER_TRIMESTRE',
+            4: 'CUARTO_TRIMESTRE'
+        }
+        path_parts.append(trimestre_map.get(informe.trimestre, 'PRIMER_TRIMESTRE'))
+    elif informe.tipo.nombre in ['ficha_verificacion', 'supervisiones'] and informe.fecha_informe:
+        mes_nombres = {
+            1: 'ENERO', 2: 'FEBRERO', 3: 'MARZO', 4: 'ABRIL',
+            5: 'MAYO', 6: 'JUNIO', 7: 'JULIO', 8: 'AGOSTO',
+            9: 'SEPTIEMBRE', 10: 'OCTUBRE', 11: 'NOVIEMBRE', 12: 'DICIEMBRE'
+        }
+        mes_num = informe.fecha_informe.month
+        mes_nombre = mes_nombres.get(mes_num, 'ENERO')
+        path_parts.append(f'{mes_num:02d}-{mes_nombre}')
+    elif informe.tipo.nombre == 'ias':
+        path_parts.append('ANUAL')
+    elif informe.tipo.nombre == 'its' and informe.informe_padre:
+        if informe.informe_padre.trimestre:
+            trimestre_map = {
+                1: 'PRIMER_TRIMESTRE',
+                2: 'SEGUNDO_TRIMESTRE',
+                3: 'TERCER_TRIMESTRE',
+                4: 'CUARTO_TRIMESTRE'
+            }
+            path_parts.append(trimestre_map.get(informe.informe_padre.trimestre, 'PRIMER_TRIMESTRE'))
+
+    # Agregar carpeta de respuestas con el tipo de documento
+    path_parts.append('RESPUESTAS')
+    path_parts.append(tipo_documento.prefijo_carpeta)
+
+    # Asegurar que el nombre del archivo tenga el formato correcto
+    if not filename.startswith(f"RESP_{informe.tipo.nombre.upper()}_{informe.id}"):
+        nombre_base, extension = os.path.splitext(filename)
+        fecha_respuesta = timezone.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"RESP_{informe.tipo.nombre.upper()}_{informe.id}_{fecha_respuesta}_{nombre_base}{extension}"
+
+    return os.path.join(*path_parts, filename)
+
+# MODELO RespuestaInforme MODIFICADO
 class RespuestaInforme(models.Model):
     informe = models.ForeignKey(Informe, on_delete=models.CASCADE, related_name='respuestas')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    tipo_documento = models.ForeignKey(TipoDocumentoRespuesta, on_delete=models.CASCADE,
+                                       help_text="Tipo de documento de respuesta")
     mensaje = models.TextField()
     archivo_adjunto = models.FileField(
-        upload_to='respuestas_informes/',
+        upload_to=upload_respuesta_to_structured_path,
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'xls', 'xlsx'])],
         null=True,
-        blank=True
+        blank=True,
+        help_text="Archivo de respuesta (PDF, DOC, DOCX, XLS, XLSX)"
     )
     fecha_respuesta = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         verbose_name = "Respuesta de Informe"
         verbose_name_plural = "Respuestas de Informes"
         ordering = ['-fecha_respuesta']
-    
+
     def __str__(self):
         return f"Respuesta de {self.usuario.get_full_name()} a {self.informe.titulo}"
+
+    def get_archivo_nombre(self):
+        """Devuelve solo el nombre del archivo sin la ruta"""
+        if self.archivo_adjunto:
+            return os.path.basename(self.archivo_adjunto.name)
+        return None
+
+    def get_info_origen(self):
+        """Devuelve información del informe original para mostrar en la respuesta"""
+        return {
+            'municipalidad': self.informe.usuario.get_municipalidad_display(),
+            'tipo_informe': self.informe.tipo.get_nombre_display(),
+            'periodo': self.informe.get_periodo_display(),
+            'titulo': self.informe.titulo,
+            'id_informe': self.informe.id
+        }
+
+    def get_ruta_almacenamiento(self):
+        """Devuelve la ruta donde se guardará el archivo"""
+        if self.archivo_adjunto:
+            return os.path.dirname(self.archivo_adjunto.name)
+        return None

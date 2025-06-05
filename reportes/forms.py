@@ -1,5 +1,7 @@
 from django import forms
-from .models import Informe, TipoInforme, RespuestaInforme
+from django.utils import timezone
+from .models import Informe, TipoInforme, RespuestaInforme, TipoDocumentoRespuesta
+import os
 
 class InformeForm(forms.ModelForm):
     class Meta:
@@ -99,11 +101,16 @@ class InformeForm(forms.ModelForm):
 
         return cleaned_data
 
+
 class RespuestaInformeForm(forms.ModelForm):
     class Meta:
         model = RespuestaInforme
-        fields = ['mensaje', 'archivo_adjunto']
+        fields = ['tipo_documento', 'mensaje', 'archivo_adjunto']
         widgets = {
+            'tipo_documento': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
             'mensaje': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 5,
@@ -115,3 +122,42 @@ class RespuestaInformeForm(forms.ModelForm):
                 'accept': '.pdf,.doc,.docx,.xls,.xlsx'
             })
         }
+
+    def __init__(self, *args, **kwargs):
+        informe = kwargs.pop('informe', None)
+        super().__init__(*args, **kwargs)
+
+        # Filtrar solo tipos de documento activos
+        self.fields['tipo_documento'].queryset = TipoDocumentoRespuesta.objects.filter(activo=True)
+
+        # Personalizar el label del tipo de documento
+        self.fields['tipo_documento'].label = 'Tipo de Documento de Respuesta'
+        self.fields['tipo_documento'].help_text = 'Selecciona el tipo de documento que vas a adjuntar como respuesta'
+
+        # Hacer archivo adjunto requerido solo si se selecciona un tipo de documento
+        self.fields['archivo_adjunto'].required = False
+
+        # Si tenemos el informe, podemos personalizar más cosas
+        if informe:
+            self.informe = informe
+            # Establecer el nombre del archivo sugerido
+            fecha_actual = timezone.now().strftime('%Y%m%d')
+            self.fields['archivo_adjunto'].widget.attrs['data-suggested-name'] = (
+                f"RESP_{informe.tipo.nombre.upper()}_{informe.id}_{fecha_actual}"
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo_documento = cleaned_data.get('tipo_documento')
+        archivo_adjunto = cleaned_data.get('archivo_adjunto')
+        mensaje = cleaned_data.get('mensaje')
+
+        # Validar que al menos haya mensaje
+        if not mensaje or not mensaje.strip():
+            raise forms.ValidationError('Debe proporcionar un mensaje de respuesta.')
+
+        # Si se selecciona un tipo de documento, debe haber archivo
+        if tipo_documento and not archivo_adjunto:
+            raise forms.ValidationError(f'Debe adjuntar un archivo del tipo: {tipo_documento.get_nombre_display()}')
+
+        return cleaned_data

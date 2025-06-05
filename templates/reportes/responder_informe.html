@@ -28,50 +28,92 @@
                     </div>
                 {% endif %}
 
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="respuestaForm">
                     {% csrf_token %}
-                    
+
+                    <!-- Campo: Tipo de Documento -->
+                    <div class="mb-3">
+                        <label for="{{ form.tipo_documento.id_for_label }}" class="form-label">
+                            <i class="fas fa-file-signature me-1"></i>{{ form.tipo_documento.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.tipo_documento }}
+                        {% if form.tipo_documento.errors %}
+                            <div class="text-danger small">{{ form.tipo_documento.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.tipo_documento.help_text }}</div>
+
+                        <!-- Vista previa de la ruta donde se guardará -->
+                        <div id="previsualizacionRuta" class="mt-2" style="display: none;">
+                            <div class="alert alert-info py-2">
+                                <strong><i class="fas fa-folder me-2"></i>Se guardará en:</strong><br>
+                                <code id="rutaCompleta"></code>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label for="{{ form.mensaje.id_for_label }}" class="form-label">
-                            <i class="fas fa-comment me-1"></i>Mensaje de Respuesta
+                            <i class="fas fa-comment me-1"></i>Mensaje de Respuesta <span class="text-danger">*</span>
                         </label>
                         {{ form.mensaje }}
                         {% if form.mensaje.errors %}
                             <div class="text-danger small">{{ form.mensaje.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.archivo_adjunto.id_for_label }}" class="form-label">
-                            <i class="fas fa-paperclip me-1"></i>Archivo Adjunto (Opcional)
+                            <i class="fas fa-paperclip me-1"></i>Archivo Adjunto <span class="text-danger">*</span>
                         </label>
                         {{ form.archivo_adjunto }}
                         {% if form.archivo_adjunto.errors %}
                             <div class="text-danger small">{{ form.archivo_adjunto.errors.0 }}</div>
                         {% endif %}
                         <div class="form-text">
-                            Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX
+                            Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX (Máximo 50MB)
+                        </div>
+                        <!-- Mostrar archivo seleccionado -->
+                        <div id="archivoSeleccionado" class="mt-2" style="display: none;">
+                            <div class="alert alert-success py-2">
+                                <i class="fas fa-file me-2"></i>Archivo seleccionado: <span id="nombreArchivo"></span>
+                                <br><small class="text-muted">Recomendado: RESP_{{ informe.tipo.nombre|upper }}_{{ informe.id }}_[fecha]_[nombre_archivo]</small>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="nuevo_estado" class="form-label">
                             <i class="fas fa-flag me-1"></i>Cambiar Estado del Informe
                         </label>
                         <select name="nuevo_estado" id="nuevo_estado" class="form-select">
-                            <option value="">Mantener estado actual</option>
+                            <option value="">Mantener estado actual: {{ informe.get_estado_display }}</option>
                             <option value="en_revision">En Revisión</option>
                             <option value="aprobado">Aprobado</option>
                             <option value="rechazado">Rechazado</option>
                             <option value="requiere_correccion">Requiere Corrección</option>
                         </select>
                     </div>
-                    
+
+                    <!-- Información de contexto mejorada -->
+                    <div class="alert alert-primary">
+                        <strong><i class="fas fa-info-circle me-2"></i>Esta respuesta corresponde a:</strong><br>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <strong>Municipalidad:</strong> {{ informe.usuario.get_municipalidad_display }}<br>
+                                <strong>Tipo de Informe:</strong> {{ informe.tipo.get_nombre_display }}<br>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Período:</strong> {{ informe.get_periodo_display }}<br>
+                                <strong>Año:</strong> {{ informe.año }}<br>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-between">
                         <a href="{% url 'reportes:detalle_informe' informe.id %}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Cancelar
                         </a>
-                        <button type="submit" class="btn btn-primary-custom">
+                        <button type="submit" class="btn btn-primary-custom" id="btnEnviar">
                             <i class="fas fa-paper-plane me-2"></i>Enviar Respuesta
                         </button>
                     </div>
@@ -79,7 +121,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
@@ -92,7 +134,7 @@
                     <strong>Tipo:</strong>
                     <span class="badge bg-info ms-2">{{ informe.tipo.get_nombre_display }}</span>
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>Estado Actual:</strong>
                     {% if informe.estado == 'pendiente' %}
@@ -107,23 +149,23 @@
                         <span class="badge bg-warning ms-2">Requiere Corrección</span>
                     {% endif %}
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>Usuario:</strong> {{ informe.usuario.get_full_name|default:informe.usuario.username }}
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>Municipalidad:</strong> {{ informe.usuario.get_municipalidad_display|default:"N/A" }}
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>Período:</strong> {{ informe.get_periodo_display }}
                 </div>
-                
+
                 <div class="mb-2">
                     <strong>Fecha:</strong> {{ informe.fecha_subida|date:"d/m/Y" }}
                 </div>
-                
+
                 {% if informe.archivo_adjunto %}
                 <hr>
                 <a href="{{ informe.archivo_adjunto.url }}" class="btn btn-outline-primary btn-sm w-100" target="_blank">
@@ -132,7 +174,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="mb-0">
@@ -143,6 +185,143 @@
                 <p class="small">{{ informe.descripcion }}</p>
             </div>
         </div>
+
+        <!-- Sección: Información de almacenamiento -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-folder me-2"></i>Estructura de Almacenamiento
+                </h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <strong>Ruta base:</strong><br>
+                    <code>INFORMES/{{ informe.usuario.get_municipalidad_display }}/{{ informe.tipo.nombre|upper }}/{{ informe.año }}/{% if informe.get_periodo_display %}[PERÍODO]/{% endif %}RESPUESTAS/[TIPO_DOC]/</code>
+                </small>
+                <hr>
+                <small class="text-muted">
+                    <strong>Nombre sugerido para el archivo:</strong><br>
+                    <code>RESP_{{ informe.tipo.nombre|upper }}_{{ informe.id }}_[fecha]_[nombre_archivo]</code>
+                </small>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+// Mapeo de tipos de documento a sus prefijos de carpetas
+const tiposDocumento = {
+    {% for tipo in form.tipo_documento.queryset %}
+    {{ tipo.id }}: {
+        nombre: '{{ tipo.get_nombre_display }}',
+        prefijo: '{{ tipo.prefijo_carpeta }}'
+    },
+    {% endfor %}
+};
+
+// Función para actualizar la previsualización de ruta
+function actualizarPrevisualizacionRuta() {
+    const tipoSelect = document.getElementById('{{ form.tipo_documento.id_for_label }}');
+    const previsualizacion = document.getElementById('previsualizacionRuta');
+    const rutaCompleta = document.getElementById('rutaCompleta');
+    const archivoInput = document.getElementById('{{ form.archivo_adjunto.id_for_label }}');
+
+    if (tipoSelect.value && tiposDocumento[tipoSelect.value]) {
+        const tipo = tiposDocumento[tipoSelect.value];
+        const ruta = `INFORMES/{{ informe.usuario.get_municipalidad_display }}/{{ informe.tipo.nombre|upper }}/{{ informe.año }}/{% if informe.get_periodo_display %}{{ informe.get_periodo_display }}/{% endif %}RESPUESTAS/${tipo.prefijo}/`;
+
+        rutaCompleta.textContent = ruta;
+        previsualizacion.style.display = 'block';
+        archivoInput.required = true;
+    } else {
+        previsualizacion.style.display = 'none';
+        archivoInput.required = false;
+    }
+}
+
+// Mostrar nombre del archivo seleccionado con sugerencia de nombre
+document.getElementById('{{ form.archivo_adjunto.id_for_label }}').addEventListener('change', function() {
+    const archivoDiv = document.getElementById('archivoSeleccionado');
+    const nombreSpan = document.getElementById('nombreArchivo');
+    const suggestedName = `RESP_{{ informe.tipo.nombre|upper }}_{{ informe.id }}_${new Date().toISOString().slice(0,10).replace(/-/g, '')}`;
+
+    if (this.files && this.files[0]) {
+        let nombreArchivo = this.files[0].name;
+
+        // Si el nombre no sigue el patrón sugerido, mostrar advertencia
+        if (!nombreArchivo.includes(`RESP_{{ informe.tipo.nombre|upper }}_{{ informe.id }}`)) {
+            nombreSpan.innerHTML = `<span class="text-warning">${nombreArchivo}</span><br>
+                                   <small class="text-muted">Recomendado: ${suggestedName}_[tu_archivo]</small>`;
+        } else {
+            nombreSpan.textContent = nombreArchivo;
+        }
+
+        archivoDiv.style.display = 'block';
+    } else {
+        archivoDiv.style.display = 'none';
+    }
+});
+
+// Función para mostrar errores de validación
+function mostrarError(mensaje, campoId) {
+    const campo = document.getElementById(campoId);
+    let errorDiv = campo.nextElementSibling;
+
+    if (!errorDiv || !errorDiv.classList.contains('text-danger')) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'text-danger small mt-1';
+        campo.parentNode.insertBefore(errorDiv, campo.nextSibling);
+    }
+
+    errorDiv.textContent = mensaje;
+    campo.focus();
+}
+
+// Validación mejorada del formulario
+document.getElementById('respuestaForm').addEventListener('submit', function(e) {
+    const tipoDocumento = document.getElementById('{{ form.tipo_documento.id_for_label }}').value;
+    const mensaje = document.getElementById('{{ form.mensaje.id_for_label }}').value.trim();
+    const archivo = document.getElementById('{{ form.archivo_adjunto.id_for_label }}').files[0];
+    const btnEnviar = document.getElementById('btnEnviar');
+    let hayErrores = false;
+
+    // Limpiar errores previos
+    document.querySelectorAll('.text-danger').forEach(el => el.textContent = '');
+
+    // Validar tipo de documento
+    if (!tipoDocumento) {
+        mostrarError('Por favor, selecciona el tipo de documento de respuesta.', '{{ form.tipo_documento.id_for_label }}');
+        hayErrores = true;
+    }
+
+    // Validar mensaje
+    if (!mensaje) {
+        mostrarError('Por favor, escribe un mensaje de respuesta.', '{{ form.mensaje.id_for_label }}');
+        hayErrores = true;
+    }
+
+    // Validar archivo adjunto si se seleccionó tipo de documento
+    if (tipoDocumento && !archivo) {
+        mostrarError('Por favor, adjunta el archivo de respuesta.', '{{ form.archivo_adjunto.id_for_label }}');
+        hayErrores = true;
+    }
+
+    if (hayErrores) {
+        e.preventDefault();
+        return false;
+    }
+
+    // Deshabilitar botón para evitar doble envío
+    btnEnviar.disabled = true;
+    btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enviando...';
+});
+
+// Inicializar previsualización al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    actualizarPrevisualizacionRuta();
+
+    // Configurar evento para el cambio de tipo de documento
+    document.getElementById('{{ form.tipo_documento.id_for_label }}').addEventListener('change', actualizarPrevisualizacionRuta);
+});
+</script>
 {% endblock %}

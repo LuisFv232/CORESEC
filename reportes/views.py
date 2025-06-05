@@ -157,6 +157,9 @@ def detalle_informe(request, informe_id):
     return render(request, 'reportes/detalle_informe.html', context)
 
 
+# views.py - Vista responder_informe mejorada
+
+@login_required
 @login_required
 def responder_informe(request, informe_id):
     if request.user.tipo_usuario not in ['administrador', 'coordinador']:
@@ -166,34 +169,56 @@ def responder_informe(request, informe_id):
     informe = get_object_or_404(Informe, id=informe_id)
 
     if request.method == 'POST':
-        form = RespuestaInformeForm(request.POST, request.FILES)
+        form = RespuestaInformeForm(request.POST, request.FILES, informe=informe)
         if form.is_valid():
             respuesta = form.save(commit=False)
             respuesta.informe = informe
             respuesta.usuario = request.user
-            respuesta.save()
 
-            # Actualizar estado del informe si se especifica
-            nuevo_estado = request.POST.get('nuevo_estado')
-            if nuevo_estado and nuevo_estado in ['en_revision', 'aprobado', 'rechazado', 'requiere_correccion']:
-                informe.estado = nuevo_estado
-                # CORREGIDO: Solo actualizar fecha_actualizacion que existe en el modelo
-                informe.fecha_actualizacion = timezone.now()
-                informe.save()
+            try:
+                # Generar nombre de archivo estructurado
+                if respuesta.archivo_adjunto:
+                    # Obtener la extensión del archivo original
+                    nombre_original = respuesta.archivo_adjunto.name
+                    nombre_base, extension = os.path.splitext(nombre_original)
 
-            messages.success(request, 'Respuesta enviada exitosamente.')
-            return redirect('reportes:detalle_informe', informe_id=informe.id)
+                    # Generar nuevo nombre con estructura
+                    fecha_respuesta = timezone.now().strftime('%Y%m%d_%H%M%S')
+                    nuevo_nombre = f"RESP_{informe.tipo.nombre.upper()}_{informe.id}_{fecha_respuesta}{extension}"
+
+                    # Asignar el nuevo nombre al archivo
+                    respuesta.archivo_adjunto.name = upload_respuesta_to_structured_path(
+                        respuesta, nuevo_nombre
+                    )
+
+                respuesta.save()
+
+                # Actualizar estado del informe si se especifica
+                nuevo_estado = request.POST.get('nuevo_estado')
+                if nuevo_estado and nuevo_estado in ['en_revision', 'aprobado', 'rechazado', 'requiere_correccion']:
+                    informe.estado = nuevo_estado
+                    informe.fecha_actualizacion = timezone.now()
+                    informe.save()
+
+                messages.success(request,
+                                 f'Respuesta enviada exitosamente como {respuesta.tipo_documento.get_nombre_display()}.')
+                return redirect('reportes:detalle_informe', informe_id=informe.id)
+
+            except Exception as e:
+                messages.error(request, f'Error al guardar la respuesta: {str(e)}')
+                logger.error(f"Error al responder informe {informe_id}: {str(e)}")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
     else:
-        form = RespuestaInformeForm()
+        form = RespuestaInformeForm(informe=informe)
 
     context = {
         'form': form,
         'informe': informe,
     }
-
     return render(request, 'reportes/responder_informe.html', context)
-
-
 @login_required
 def cambiar_estado_informe(request, informe_id):
     if request.user.tipo_usuario not in ['administrador', 'coordinador']:
