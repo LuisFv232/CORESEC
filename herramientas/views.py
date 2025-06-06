@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import Documento, Enlace, RecursoConasec
-from .forms import DocumentoForm, EnlaceForm
+from .models import Documento, Enlace, RecursoConasec, TipoDocumento
+from .forms import DocumentoForm, EnlaceForm, TipoDocumentoForm
 import os
 from django.conf import settings
 from datetime import datetime, date
@@ -362,3 +362,57 @@ def crear_estructura_informes():
                 for periodo in periodos:
                     periodo_path = os.path.join(año_path, periodo)
                     os.makedirs(periodo_path, exist_ok=True)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def gestion_tipos_documento(request):
+    tipos = TipoDocumento.objects.all()
+    return render(request, 'herramientas/gestion_tipos_documento.html', {'tipos': tipos})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def crear_tipo_documento(request):
+    if request.method == 'POST':
+        form = TipoDocumentoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('gestion_tipos_documento')
+    else:
+        form = TipoDocumentoForm()
+    return render(request, 'herramientas/crear_tipo_documento.html', {'form': form})
+@login_required
+@permission_required('herramientas.view_tipodocumento')
+def lista_tipos_documento(request):
+    tipos = TipoDocumento.objects.all().order_by('nombre')
+    return render(request, 'herramientas/tipos_documento/lista.html', {'tipos': tipos})
+
+@login_required
+@permission_required('herramientas.add_tipodocumento')
+def crear_tipo_documento(request):
+    if request.method == 'POST':
+        form = TipoDocumentoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo de documento creado exitosamente!')
+            return redirect('herramientas:lista_tipos_documento')
+    else:
+        form = TipoDocumentoForm()
+
+    return render(request, 'herramientas/tipos_documento/crear.html', {'form': form})
+
+@login_required
+@permission_required('herramientas.change_tipodocumento')
+def editar_tipo_documento(request, pk):
+    tipo = get_object_or_404(TipoDocumento, pk=pk)
+
+    if request.method == 'POST':
+        form = TipoDocumentoForm(request.POST, instance=tipo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo de documento actualizado correctamente')
+            return redirect('herramientas:lista_tipos_documento')
+    else:
+        form = TipoDocumentoForm(instance=tipo)
+
+    return render(request, 'herramientas/tipos_documento/editar.html', {'form': form, 'tipo': tipo})

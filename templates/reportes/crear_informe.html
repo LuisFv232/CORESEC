@@ -170,3 +170,47 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    // Inicializar Select2 para el campo tipo
+    $('.select2').select2({
+        placeholder: $(this).data('placeholder'),
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Función para mostrar/ocultar campos según tipo seleccionado
+    function toggleFields() {
+        const tipoSelect = $('#{{ form.tipo.id_for_label }}');
+        const selectedOption = tipoSelect.find('option:selected');
+        const tipoText = selectedOption.text().toLowerCase();
+        const tipoValue = selectedOption.val();
+
+        // Mostrar trimestre para informes trimestrales o ITCA
+        if (tipoText.includes('trimestral') || tipoText.includes('itca') ||
+            tipoValue.includes('itca') || tipoText.includes('trimestre')) {
+            $('#trimestre-field').show();
+        } else {
+            $('#trimestre-field').hide();
+            $('#{{ form.trimestre.id_for_label }}').val('');
+        }
+
+        // Mostrar informe padre solo para respuestas ITS
+        if (tipoText.includes('respuesta') || tipoText.includes('its')) {
+            $('#informe-padre-field').show();
+        } else {
+            $('#informe-padre-field').hide();
+            $('#{{ form.informe_padre.id_for_label }}').val('');
+        }
+    }
+
+    // Ejecutar al cargar y cuando cambie la selección
+    toggleFields();
+    $('#{{ form.tipo.id_for_label }}').on('change', toggleFields);
+});
+</script>
+{% endblock %}

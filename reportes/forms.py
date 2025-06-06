@@ -82,13 +82,19 @@ class InformeForm(forms.ModelForm):
 
         # Filtrar tipos de informe según el usuario
         if self.user:
-            self.fields['tipo'].queryset = TipoInforme.objects.filter(
-                activo=True
-            ).filter(
-                models.Q(permite_municipal=True) if self.user.tipo_usuario == 'municipal' else
-                models.Q(permite_coordinador=True) if self.user.tipo_usuario == 'coordinador' else
-                models.Q(permite_admin=True)
-            )
+            # Obtener todos los tipos activos que el usuario puede ver
+            tipos_disponibles = TipoInforme.objects.filter(activo=True)
+
+            # Filtrar por permisos del usuario
+            if self.user.tipo_usuario == 'municipal':
+                tipos_disponibles = tipos_disponibles.filter(permite_municipal=True)
+            elif self.user.tipo_usuario == 'coordinador':
+                tipos_disponibles = tipos_disponibles.filter(permite_coordinador=True)
+            else:  # administrador
+                tipos_disponibles = tipos_disponibles.filter(permite_admin=True)
+
+            # Asignar el queryset filtrado
+            self.fields['tipo'].queryset = tipos_disponibles
 
             # Configurar campos dinámicamente según el tipo seleccionado
             if 'tipo' in self.data:
@@ -106,6 +112,13 @@ class InformeForm(forms.ModelForm):
         self.fields['fecha_informe'].required = False
         self.fields['informe_padre'].required = False
         self.fields['archivo_adjunto'].required = False
+
+        # Mejorar la presentación del campo tipo
+        self.fields['tipo'].empty_label = "Seleccione un tipo de informe"
+        self.fields['tipo'].widget.attrs.update({
+            'class': 'form-select select2',
+            'data-placeholder': 'Seleccione un tipo de informe'
+        })
 
     def configurar_campos_por_tipo(self, tipo):
         """Configura los campos según las necesidades del tipo de informe"""

@@ -64,29 +64,35 @@ def lista_informes(request):
 
 @login_required
 def crear_informe(request):
+    if not hasattr(request.user, 'municipalidad') and request.user.tipo_usuario == 'municipal':
+        messages.error(request, 'No tiene una municipalidad asignada. Contacte al administrador.')
+        return redirect('reportes:lista_informes')
+
     if request.method == 'POST':
         form = InformeForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             informe = form.save(commit=False)
             informe.usuario = request.user
-
-            try:
-                informe.save()
-                messages.success(request, f'Informe {informe.tipo.nombre_display} creado exitosamente.')
-                return redirect('reportes:lista_informes')
-            except Exception as e:
-                logger.error(f"Error al crear informe: {str(e)}")
-                messages.error(request, 'Ocurrió un error al guardar el informe.')
+            informe.municipalidad = request.user.municipalidad
+            informe.save()
+            messages.success(request, 'Informe subido exitosamente!')
+            return redirect('reportes:lista_informes')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
     else:
         form = InformeForm(user=request.user)
 
+        # Verificar si hay tipos disponibles
+        if not form.fields['tipo'].queryset.exists():
+            messages.warning(request,
+                             'No hay tipos de informe disponibles para su perfil. Contacte al administrador.')
+            return redirect('reportes:lista_informes')
+
     context = {
         'form': form,
-        'tipos_info': TipoInforme.objects.filter(activo=True)
+        'titulo_pagina': 'Subir Nuevo Informe'
     }
     return render(request, 'reportes/crear_informe.html', context)
-
-
 @login_required
 def detalle_informe(request, pk):
     if request.user.tipo_usuario in ['administrador', 'coordinador']:
@@ -237,3 +243,4 @@ def editar_tipo_documento(request, pk):
         form = TipoDocumentoRespuestaForm(instance=tipo)
 
     return render(request, 'reportes/admin/tipos_documento/editar.html', {'form': form, 'tipo': tipo})
+

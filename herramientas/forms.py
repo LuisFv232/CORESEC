@@ -1,5 +1,5 @@
 from django import forms
-from .models import Documento, Enlace
+from .models import Documento, Enlace, TipoDocumento
 
 class DocumentoForm(forms.ModelForm):
     class Meta:
@@ -45,4 +45,17 @@ class EnlaceForm(forms.ModelForm):
             'categoria': forms.Select(attrs={
                 'class': 'form-select'
             })
+        }
+
+class TipoDocumentoForm(forms.ModelForm):
+    class Meta:
+        model = TipoDocumento
+        fields = '__all__'
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'prefijo_carpeta': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+        help_texts = {
+            'prefijo_carpeta': 'Prefijo para la estructura de carpetas (ej: INF, FIC, SUP)',
         }

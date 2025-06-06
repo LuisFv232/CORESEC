@@ -77,3 +77,34 @@ class RecursoConasec(models.Model):
     
     def __str__(self):
         return self.titulo
+
+
+class TipoDocumento(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True)
+    prefijo_carpeta = models.CharField(max_length=20, unique=True)
+    activo = models.BooleanField(default=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    # Permisos por tipo de usuario
+    permite_municipal = models.BooleanField(default=False, verbose_name="Usuarios Municipales")
+    permite_admin = models.BooleanField(default=True, verbose_name="Administradores")
+    permite_coordinador = models.BooleanField(default=True, verbose_name="Coordinadores")
+
+    class Meta:
+        verbose_name = "Tipo de Documento"
+        verbose_name_plural = "Tipos de Documento"
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
+    def puede_acceder(self, user):
+        """Determina si un usuario puede acceder a este tipo de documento"""
+        if user.tipo_usuario == 'municipal':
+            return self.permite_municipal
+        elif user.tipo_usuario == 'administrador':
+            return self.permite_admin
+        elif user.tipo_usuario == 'coordinador':
+            return self.permite_coordinador
+        return False

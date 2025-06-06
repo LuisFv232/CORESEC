@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Crear Tipo de Documento</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Complete el formulario</h6>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group row">
+                    <div class="col-sm-6 mb-3 mb-sm-0">
+                        <label for="{{ form.nombre.id_for_label }}">Nombre</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                            <div class="text-danger">{{ form.nombre.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="{{ form.prefijo_carpeta.id_for_label }}">Prefijo Carpeta</label>
+                        {{ form.prefijo_carpeta }}
+                        {% if form.prefijo_carpeta.errors %}
+                            <div class="text-danger">{{ form.prefijo_carpeta.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.descripcion.id_for_label }}">Descripción</label>
+                    {{ form.descripcion }}
+                    {% if form.descripcion.errors %}
+                        <div class="text-danger">{{ form.descripcion.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group form-check">
+                    {{ form.activo }}
+                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo</label>
+                </div>
+                <div class="form-group">
+                    <h6>Permisos por Tipo de Usuario</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.permite_municipal }}
+                                <label class="form-check-label" for="{{ form.permite_municipal.id_for_label }}">
+                                    Usuarios Municipales
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.permite_admin }}
+                                <label class="form-check-label" for="{{ form.permite_admin.id_for_label }}">
+                                    Administradores
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ form.permite_coordinador }}
+                                <label class="form-check-label" for="{{ form.permite_coordinador.id_for_label }}">
+                                    Coordinadores
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="{% url 'herramientas:lista_tipos_documento' %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

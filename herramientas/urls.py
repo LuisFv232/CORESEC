@@ -11,4 +11,7 @@ urlpatterns = [
     path('explorador/', views.explorador_archivos, name='explorador_archivos'),
     path('informacion/', views.gestion_informacion, name='gestion_informacion'),
     path('recursos/', views.documentos_recursos, name='documentos_recursos'),
+    path('tipos-documento/', views.lista_tipos_documento, name='lista_tipos_documento'),
+    path('tipos-documento/crear/', views.crear_tipo_documento, name='crear_tipo_documento'),
+    path('tipos-documento/editar/<int:pk>/', views.editar_tipo_documento, name='editar_tipo_documento'),
 ]

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Gestión de Tipos de Documento</h2>
+    <a href="{% url 'crear_tipo_documento' %}" class="btn btn-primary mb-3">Nuevo Tipo</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tipo in tipos %}
+            <tr>
+                <td>{{ tipo.nombre }}</td>
+                <td>{{ tipo.descripcion }}</td>
+                <td>{% if tipo.activo %}Activo{% else %}Inactivo{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

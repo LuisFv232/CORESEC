@@ -132,7 +132,8 @@ class Informe(models.Model):
     
     # Campos básicos
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='informes')
-    tipo = models.ForeignKey(TipoInforme, on_delete=models.CASCADE)
+    tipo = models.ForeignKey('herramientas.TipoDocumento', on_delete=models.PROTECT)
+
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField()
     
