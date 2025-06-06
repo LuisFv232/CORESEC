@@ -43,6 +43,7 @@ def upload_to_structured_path(instance, filename):
     # Unir la ruta y agregar el nombre del archivo
     return os.path.join(*path_parts, filename)
 
+
 class TipoInforme(models.Model):
     TIPOS_CHOICES = [
         ('itca', 'ITCA'),
@@ -50,35 +51,66 @@ class TipoInforme(models.Model):
         ('supervisiones', 'Supervisiones'),
         ('its', 'ITS'),
         ('ias', 'IAS'),
+        # Los nuevos tipos se agregarán dinámicamente
     ]
-    
-    nombre = models.CharField(max_length=50, choices=TIPOS_CHOICES, unique=True)
+
+    nombre = models.CharField(max_length=50, unique=True)
+    nombre_display = models.CharField(max_length=100, verbose_name="Nombre a mostrar")
     descripcion = models.TextField()
-    requiere_periodo = models.BooleanField(default=False)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    
+
+    # Configuración de campos
+    requiere_trimestre = models.BooleanField(default=False)
+    requiere_fecha = models.BooleanField(default=False)
+    requiere_informe_padre = models.BooleanField(default=False)
+    permite_adjuntos = models.BooleanField(default=True)
+
+    # Estructura de carpetas
+    estructura_carpetas = models.CharField(
+        max_length=255,
+        default="INFORMES/{municipalidad}/{tipo}/{año}/{periodo}",
+        help_text="Variables disponibles: {municipalidad}, {tipo}, {año}, {periodo}"
+    )
+
     # Permisos por tipo de usuario
-    permite_municipal = models.BooleanField(default=False)
-    permite_admin = models.BooleanField(default=True)
-    permite_coordinador = models.BooleanField(default=True)
-    
+    permite_municipal = models.BooleanField(default=False, verbose_name="Usuarios Municipales")
+    permite_admin = models.BooleanField(default=True, verbose_name="Administradores")
+    permite_coordinador = models.BooleanField(default=True, verbose_name="Coordinadores")
+
     class Meta:
         verbose_name = "Tipo de Informe"
         verbose_name_plural = "Tipos de Informe"
-    
+        ordering = ['nombre']
+
     def __str__(self):
-        return self.get_nombre_display()
-    
-    def puede_acceder(self, tipo_usuario):
-        """Verifica si un tipo de usuario puede acceder a este tipo de informe"""
-        if tipo_usuario == 'municipal':
+        return self.nombre_display
+
+    def puede_acceder(self, user):
+        """Determina si un usuario puede acceder a este tipo de informe"""
+        if user.tipo_usuario == 'municipal':
             return self.permite_municipal
-        elif tipo_usuario == 'administrador':
+        elif user.tipo_usuario == 'administrador':
             return self.permite_admin
-        elif tipo_usuario == 'coordinador':
+        elif user.tipo_usuario == 'coordinador':
             return self.permite_coordinador
         return False
+
+    def crear_estructura(self, municipalidad):
+        """Crea la estructura de carpetas para todas las municipalidades"""
+        import os
+        from django.conf import settings
+
+        path = self.estructura_carpetas.format(
+            municipalidad=municipalidad,
+            tipo=self.nombre.upper(),
+            año='*',
+            periodo='*'
+        )
+
+        full_path = os.path.join(settings.MEDIA_ROOT, path)
+        os.makedirs(full_path, exist_ok=True)
+        return full_path
 
 class Informe(models.Model):
     ESTADO_CHOICES = [
@@ -143,32 +175,23 @@ class Informe(models.Model):
 
 
 class TipoDocumentoRespuesta(models.Model):
-    TIPOS_RESPUESTA_CHOICES = [
-        ('oficio', 'Oficio'),
-        ('memorando', 'Memorando'),
-        ('carta', 'Carta'),
-        ('informe_tecnico', 'Informe Técnico'),
-        ('acta', 'Acta'),
-        ('resolucion', 'Resolución'),
-        ('dictamen', 'Dictamen'),
-        ('notificacion', 'Notificación'),
-        ('otro', 'Otro Documento'),
-    ]
-
-    nombre = models.CharField(max_length=50, choices=TIPOS_RESPUESTA_CHOICES, unique=True)
+    nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField()
-    prefijo_carpeta = models.CharField(max_length=20, help_text="Prefijo para la carpeta (ej: OFICIOS, MEMORANDOS)")
+    prefijo_carpeta = models.CharField(max_length=20)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    # Permisos por tipo de usuario
+    permite_municipal = models.BooleanField(default=False)
+    permite_admin = models.BooleanField(default=True)
+    permite_coordinador = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Tipo de Documento de Respuesta"
         verbose_name_plural = "Tipos de Documentos de Respuesta"
 
     def __str__(self):
-        return self.get_nombre_display()
-
-
+        return self.nombre
 # FUNCIÓN MEJORADA para upload de respuestas
 def upload_respuesta_to_structured_path(instance, filename):
     """Genera la ruta estructurada para guardar respuestas de informes"""

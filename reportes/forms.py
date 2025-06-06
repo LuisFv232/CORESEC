@@ -1,16 +1,49 @@
 from django import forms
-from django.utils import timezone
+from django.db import models
 from .models import Informe, TipoInforme, RespuestaInforme, TipoDocumentoRespuesta
+from django.utils import timezone
 import os
+
+
+class TipoInformeForm(forms.ModelForm):
+    class Meta:
+        model = TipoInforme
+        fields = '__all__'
+        widgets = {
+            'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'nombre_display': forms.TextInput(attrs={'class': 'form-control'}),
+            'estructura_carpetas': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: INFORMES/{municipalidad}/{tipo}/{año}/{periodo}'
+            }),
+        }
+        help_texts = {
+            'estructura_carpetas': 'Variables disponibles: {municipalidad}, {tipo}, {año}, {periodo}'
+        }
+
+
+class TipoDocumentoRespuestaForm(forms.ModelForm):
+    class Meta:
+        model = TipoDocumentoRespuesta
+        fields = '__all__'
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'prefijo_carpeta': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
 
 class InformeForm(forms.ModelForm):
     class Meta:
         model = Informe
-        fields = ['tipo', 'titulo', 'descripcion', 'año', 'trimestre', 'fecha_informe', 'informe_padre', 'archivo_adjunto']
+        fields = ['tipo', 'titulo', 'descripcion', 'año', 'trimestre', 'fecha_informe', 'informe_padre',
+                  'archivo_adjunto']
         widgets = {
             'tipo': forms.Select(attrs={
                 'class': 'form-select',
-                'required': True
+                'required': True,
+                'onchange': 'actualizarCamposRequeridos()'
             }),
             'titulo': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -39,65 +72,64 @@ class InformeForm(forms.ModelForm):
             }),
             'archivo_adjunto': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.doc,.docx,.xls,.xlsx',
-                'required': True
+                'accept': '.pdf,.doc,.docx,.xls,.xlsx'
             })
         }
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         # Filtrar tipos de informe según el usuario
-        if user:
-            tipos_disponibles = []
-            for tipo in TipoInforme.objects.filter(activo=True):
-                if tipo.puede_acceder(user.tipo_usuario):
-                    tipos_disponibles.append(tipo.id)
+        if self.user:
+            self.fields['tipo'].queryset = TipoInforme.objects.filter(
+                activo=True
+            ).filter(
+                models.Q(permite_municipal=True) if self.user.tipo_usuario == 'municipal' else
+                models.Q(permite_coordinador=True) if self.user.tipo_usuario == 'coordinador' else
+                models.Q(permite_admin=True)
+            )
 
-            self.fields['tipo'].queryset = TipoInforme.objects.filter(id__in=tipos_disponibles)
-
-            # Para ITS, solo mostrar informes ITCA del usuario como opciones padre
-            if user.tipo_usuario in ['administrador', 'coordinador']:
-                informes_itca = Informe.objects.filter(
-                    tipo__nombre='itca',
-                    estado__in=['pendiente', 'en_revision']
-                )
-                self.fields['informe_padre'].queryset = informes_itca
-            else:
-                self.fields['informe_padre'].queryset = Informe.objects.none()
-        else:
-            # Si no hay usuario, mostrar todos los tipos activos
-            self.fields['tipo'].queryset = TipoInforme.objects.filter(activo=True)
+            # Configurar campos dinámicamente según el tipo seleccionado
+            if 'tipo' in self.data:
+                tipo_id = self.data.get('tipo')
+                try:
+                    tipo = TipoInforme.objects.get(id=tipo_id)
+                    self.configurar_campos_por_tipo(tipo)
+                except (ValueError, TypeError, TipoInforme.DoesNotExist):
+                    pass
+            elif self.instance.pk:
+                self.configurar_campos_por_tipo(self.instance.tipo)
 
         # Configurar campos como opcionales inicialmente
         self.fields['trimestre'].required = False
         self.fields['fecha_informe'].required = False
         self.fields['informe_padre'].required = False
+        self.fields['archivo_adjunto'].required = False
+
+    def configurar_campos_por_tipo(self, tipo):
+        """Configura los campos según las necesidades del tipo de informe"""
+        self.fields['trimestre'].required = tipo.requiere_trimestre
+        self.fields['fecha_informe'].required = tipo.requiere_fecha
+        self.fields['informe_padre'].required = tipo.requiere_informe_padre
+        self.fields['archivo_adjunto'].required = tipo.permite_adjuntos
+
+        # Ocultar campos no requeridos
+        self.fields['trimestre'].widget.attrs['style'] = 'display:none;' if not tipo.requiere_trimestre else ''
+        self.fields['fecha_informe'].widget.attrs['style'] = 'display:none;' if not tipo.requiere_fecha else ''
+        self.fields['informe_padre'].widget.attrs['style'] = 'display:none;' if not tipo.requiere_informe_padre else ''
 
     def clean(self):
         cleaned_data = super().clean()
         tipo = cleaned_data.get('tipo')
-        trimestre = cleaned_data.get('trimestre')
-        fecha_informe = cleaned_data.get('fecha_informe')
-        informe_padre = cleaned_data.get('informe_padre')
 
         if tipo:
-            # Validar ITCA - requiere trimestre y año
-            if tipo.nombre == 'itca' and not trimestre:
-                raise forms.ValidationError('Los informes ITCA requieren especificar el trimestre.')
-
-            # Validar Ficha de Verificación y Supervisiones - requieren fecha
-            if tipo.nombre in ['ficha_verificacion', 'supervisiones'] and not fecha_informe:
-                raise forms.ValidationError(f'Los informes de {tipo.get_nombre_display()} requieren especificar una fecha.')
-
-            # Validar ITS - requiere informe padre ITCA
-            if tipo.nombre == 'its' and not informe_padre:
-                raise forms.ValidationError('Los informes ITS deben responder a un informe ITCA específico.')
-
-            # Validar que IAS no requiere trimestre
-            if tipo.nombre == 'ias' and trimestre:
-                cleaned_data['trimestre'] = None  # Limpiar trimestre para IAS
+            if tipo.requiere_trimestre and not cleaned_data.get('trimestre'):
+                self.add_error('trimestre', 'Este tipo de informe requiere especificar el trimestre.')
+            if tipo.requiere_fecha and not cleaned_data.get('fecha_informe'):
+                self.add_error('fecha_informe', 'Este tipo de informe requiere especificar una fecha.')
+            if tipo.requiere_informe_padre and not cleaned_data.get('informe_padre'):
+                self.add_error('informe_padre', 'Este tipo de informe requiere un informe padre específico.')
 
         return cleaned_data
 
@@ -127,8 +159,15 @@ class RespuestaInformeForm(forms.ModelForm):
         informe = kwargs.pop('informe', None)
         super().__init__(*args, **kwargs)
 
-        # Filtrar solo tipos de documento activos
-        self.fields['tipo_documento'].queryset = TipoDocumentoRespuesta.objects.filter(activo=True)
+        # Filtrar solo tipos de documento activos y permitidos para el usuario
+        if informe and hasattr(informe, 'usuario'):
+            self.fields['tipo_documento'].queryset = TipoDocumentoRespuesta.objects.filter(
+                activo=True
+            ).filter(
+                models.Q(permite_municipal=True) if informe.usuario.tipo_usuario == 'municipal' else
+                models.Q(permite_coordinador=True) if informe.usuario.tipo_usuario == 'coordinador' else
+                models.Q(permite_admin=True)
+            )
 
         # Personalizar el label del tipo de documento
         self.fields['tipo_documento'].label = 'Tipo de Documento de Respuesta'
@@ -140,11 +179,6 @@ class RespuestaInformeForm(forms.ModelForm):
         # Si tenemos el informe, podemos personalizar más cosas
         if informe:
             self.informe = informe
-            # Establecer el nombre del archivo sugerido
-            fecha_actual = timezone.now().strftime('%Y%m%d')
-            self.fields['archivo_adjunto'].widget.attrs['data-suggested-name'] = (
-                f"RESP_{informe.tipo.nombre.upper()}_{informe.id}_{fecha_actual}"
-            )
 
     def clean(self):
         cleaned_data = super().clean()
