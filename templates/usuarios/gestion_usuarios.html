@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Usuarios - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">Gestión de Usuarios</div>
+<div class="page-subtitle">Administra usuarios del sistema CORESEC</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="stat-icon primary mb-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="text-primary">{{ total_usuarios }}</h3>
+                <p class="text-muted">Total Usuarios</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="stat-icon success mb-3">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <h3 class="text-success">{{ usuarios_activos }}</h3>
+                <p class="text-muted">Usuarios Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="stat-icon warning mb-3">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3 class="text-warning">{{ administradores }}</h3>
+                <p class="text-muted">Administradores</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="stat-icon info mb-3">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h3 class="text-info">{{ municipales }}</h3>
+                <p class="text-muted">Usuarios Municipales</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">Filtros de Búsqueda</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tipo de Usuario</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos los tipos</option>
+                    <option value="administrador">Administrador</option>
+                    <option value="coordinador">Coordinador</option>
+                    <option value="municipal">Municipal</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Municipalidad</label>
+                <select name="municipalidad" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="huanuco">Huánuco</option>
+                    <option value="ambo">Ambo</option>
+                    <option value="leoncio_prado">Leoncio Prado</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="activo" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="1">Activos</option>
+                    <option value="0">Inactivos</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary-custom d-block w-100">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Usuarios -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Lista de Usuarios</h6>
+        <a href="{% url 'usuarios:registro' %}" class="btn btn-primary-custom">
+            <i class="fas fa-plus me-2"></i>Nuevo Usuario
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Tipo</th>
+                        <th>Municipalidad</th>
+                        <th>Último Acceso</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-3">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">{{ usuario.first_name }} {{ usuario.last_name }}</h6>
+                                    <small class="text-muted">{{ usuario.email }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if usuario.tipo_usuario == 'administrador' %}danger{% elif usuario.tipo_usuario == 'coordinador' %}warning{% else %}primary{% endif %}">
+                                {{ usuario.get_tipo_usuario_display }}
+                            </span>
+                        </td>
+                        <td>{{ usuario.get_municipalidad_display|default:"N/A" }}</td>
+                        <td>{{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+                        <td>
+                            {% if usuario.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-outline-primary btn-sm" onclick="editarUsuario({{ usuario.id }})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-{% if usuario.is_active %}warning{% else %}success{% endif %} btn-sm" 
+                                        onclick="toggleUsuario({{ usuario.id }}, {{ usuario.is_active|yesno:'false,true' }})">
+                                    <i class="fas fa-{% if usuario.is_active %}pause{% else %}play{% endif %}"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function editarUsuario(id) {
+    alert('Funcionalidad de edición en desarrollo');
+}
+
+function toggleUsuario(id, activar) {
+    const accion = activar ? 'activar' : 'desactivar';
+    if (confirm(`¿Estás seguro de que quieres ${accion} este usuario?`)) {
+        alert(`Usuario ${accion}do exitosamente`);
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

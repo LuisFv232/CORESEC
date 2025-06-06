@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Usuario - CORESEC{% endblock %}
+
+{% block content %}
+<div class="page-title">Eliminar Usuario</div>
+<div class="page-subtitle">¿Estás seguro de que quieres eliminar este usuario?</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Confirmar Eliminación</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Usuario a eliminar:</strong>
+                    <div class="mt-2 p-3 bg-light rounded">
+                        <div><strong>Nombre:</strong> {{ usuario.first_name }} {{ usuario.last_name }}</div>
+                        <div><strong>Usuario:</strong> {{ usuario.username }}</div>
+                        <div><strong>Email:</strong> {{ usuario.email }}</div>
+                        <div><strong>Tipo:</strong> {{ usuario.get_tipo_usuario_display }}</div>
+                        {% if usuario.municipalidad %}
+                            <div><strong>Municipalidad:</strong> {{ usuario.get_municipalidad_display }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'usuarios:gestion_usuarios' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Eliminar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

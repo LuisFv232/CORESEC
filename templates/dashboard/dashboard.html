@@ -1,0 +1,700 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">Dashboard</div>
+<div class="page-subtitle">
+    Bienvenido al panel de control de CORESEC -
+    {% if user.tipo_usuario == 'municipal' %}
+        Municipalidad de {{ user.get_municipalidad_display }}
+    {% else %}
+        {{ user.get_cargo_display }}
+    {% endif %}
+</div>
+
+<div class="stats-grid">
+    {% if user.tipo_usuario in 'administrador,coordinador' %}
+        <!-- Vista para Administradores y Coordinadores -->
+        <!-- Primera fila: 4 elementos principales -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ informes_pendientes|default:0 }}</div>
+                        <div class="stat-label text-muted">Informes Pendientes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon info mb-2">
+                            <i class="fas fa-search fa-2x text-info"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ informes_revision|default:0 }}</div>
+                        <div class="stat-label text-muted">En Revisión</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon success mb-2">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ informes_aprobados|default:0 }}</div>
+                        <div class="stat-label text-muted">Informes Aprobados</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon danger mb-2">
+                            <i class="fas fa-times-circle fa-2x text-danger"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ informes_rechazados|default:0 }}</div>
+                        <div class="stat-label text-muted">Informes Rechazados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segunda fila: 2 elementos centrados -->
+        <div class="row justify-content-center">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ informes_requiere_correccion|default:0 }}</div>
+                        <div class="stat-label text-muted">Requiere Corrección</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon primary mb-2">
+                            <i class="fas fa-file-alt fa-2x text-primary"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ total_informes|default:0 }}</div>
+                        <div class="stat-label text-muted">Total de Informes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Vista para Usuarios Municipales -->
+        <!-- Primera fila: 4 elementos principales -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ mis_pendientes|default:0 }}</div>
+                        <div class="stat-label text-muted">Informes Pendientes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon info mb-2">
+                            <i class="fas fa-search fa-2x text-info"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ mis_revision|default:0 }}</div>
+                        <div class="stat-label text-muted">En Revisión</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon success mb-2">
+                            <i class="fas fa-check fa-2x text-success"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ mis_aprobados|default:0 }}</div>
+                        <div class="stat-label text-muted">Informes Aprobados</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon danger mb-2">
+                            <i class="fas fa-times-circle fa-2x text-danger"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ mis_rechazados|default:0 }}</div>
+                        <div class="stat-label text-muted">Informes Rechazados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segunda fila: 2 elementos centrados -->
+        <div class="row justify-content-center">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon warning mb-2">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ mis_requiere_correccion|default:0 }}</div>
+                        <div class="stat-label text-muted">Requiere Corrección</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stat-card card h-100">
+                    <div class="card-body text-center">
+                        <div class="stat-icon primary mb-2">
+                            <i class="fas fa-file-alt fa-2x text-primary"></i>
+                        </div>
+                        <div class="stat-number h3 mb-1">{{ mis_informes|default:0 }}</div>
+                        <div class="stat-label text-muted">Total de Informes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% if user.tipo_usuario in 'administrador,coordinador' %}
+<!-- Gráficos Estadísticos para Administradores -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Informes por Estado
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="estadosChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Informes por Tipo
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="tiposChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Evolución Mensual de Informes
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="evolucionChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>Informes por Municipalidad
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="municipalidadesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Gráficos para Usuarios Municipales -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Mis Informes por Estado
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="misEstadosChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Mis Informes por Tipo
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="misTiposChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Mi Evolución Mensual de Informes
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="miEvolucionChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Sección de Actividad Reciente -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Actividad Reciente</h5>
+            </div>
+            <div class="card-body">
+                {% if actividad_reciente %}
+                    {% for actividad in actividad_reciente %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ actividad.titulo }}</h6>
+                                <small class="text-muted">{{ actividad.descripcion }}</small>
+                            </div>
+                            <div class="text-end">
+                                {% if actividad.estado == 'pendiente' %}
+                                    <span class="badge bg-warning">Pendiente</span>
+                                {% elif actividad.estado == 'aprobado' %}
+                                    <span class="badge bg-success">Aprobado</span>
+                                {% elif actividad.estado == 'rechazado' %}
+                                    <span class="badge bg-danger">Rechazado</span>
+                                {% elif actividad.estado == 'en_revision' %}
+                                    <span class="badge bg-info">En Revisión</span>
+                                {% elif actividad.estado == 'requiere_correccion' %}
+                                    <span class="badge bg-warning">Requiere Corrección</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ actividad.estado|title }}</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">{{ actividad.fecha|date:"d/m/Y H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay actividad reciente</p>
+                        <p class="text-muted small">No se encontraron informes en el sistema. Comience subiendo un nuevo informe.</p>
+                        <a href="{% url 'reportes:crear_informe' %}" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Subir Informe
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'reportes:crear_informe' %}" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Subir Informe
+                    </a>
+                    <a href="{% url 'reportes:lista_informes' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i>Ver Mis Informes
+                    </a>
+                    {% if user.tipo_usuario in 'administrador,coordinador' %}
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="fas fa-users me-2"></i>Gestionar Usuarios
+                    </a>
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i>Reportes Avanzados
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS adicional para mejorar la apariencia -->
+<style>
+.stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.stat-icon {
+    padding: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.stat-number {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.card-header {
+            background-color: #1EB980 !important;
+            color: white;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 10px;
+}
+
+.border-bottom:last-child {
+    border-bottom: none !important;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configuración de colores
+const primaryColor = '#1a9d68';
+const secondaryColor = '#16a065';
+const colors = {
+    pendiente: '#ffc107',           // Amarillo para pendiente
+    en_revision: '#17a2b8',         // Azul claro para en revisión
+    aprobado: '#28a745',            // Verde para aprobado
+    rechazado: '#dc3545',           // Rojo para rechazado
+    requiere_correccion: '#fd7e14'  // Naranja para requiere corrección
+};
+
+{% if user.tipo_usuario in 'administrador,coordinador' %}
+// Gráfico de Estados para Administradores
+const estadosCtx = document.getElementById('estadosChart').getContext('2d');
+new Chart(estadosCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pendientes', 'En Revisión', 'Aprobados', 'Rechazados', 'Requiere Corrección'],
+        datasets: [{
+            data: [
+                {{ informes_pendientes|default:0 }},
+                {{ informes_revision|default:0 }},
+                {{ informes_aprobados|default:0 }},
+                {{ informes_rechazados|default:0 }},
+                {{ informes_requiere_correccion|default:0 }}
+            ],
+            backgroundColor: [
+                colors.pendiente,
+                colors.en_revision,
+                colors.aprobado,
+                colors.rechazado,
+                colors.requiere_correccion
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Tipos para Administradores
+const tiposCtx = document.getElementById('tiposChart').getContext('2d');
+new Chart(tiposCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ tipos_labels|safe }},
+        datasets: [{
+            label: 'Cantidad',
+            data: {{ tipos_data|safe }},
+            backgroundColor: primaryColor,
+            borderColor: secondaryColor,
+            borderWidth: 1,
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Evolución Mensual para Administradores
+const evolucionCtx = document.getElementById('evolucionChart').getContext('2d');
+new Chart(evolucionCtx, {
+    type: 'line',
+    data: {
+        labels: {{ meses_labels|safe }},
+        datasets: [{
+            label: 'Informes Recibidos',
+            data: {{ meses_data|safe }},
+            borderColor: primaryColor,
+            backgroundColor: primaryColor + '20',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: primaryColor,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Municipalidades para Administradores
+const municipalidadesCtx = document.getElementById('municipalidadesChart').getContext('2d');
+new Chart(municipalidadesCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ municipalidades_labels|safe }},
+        datasets: [{
+            label: 'Informes',
+            data: {{ municipalidades_data|safe }},
+            backgroundColor: [primaryColor, secondaryColor, '#ffc107', '#17a2b8', '#6f42c1', '#e83e8c'],
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        indexAxis: 'y',
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.1)'
+                }
+            },
+            y: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+{% else %}
+// Gráficos para Usuarios Municipales
+
+// Gráfico de Estados del Usuario
+const misEstadosCtx = document.getElementById('misEstadosChart').getContext('2d');
+new Chart(misEstadosCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pendientes', 'En Revisión', 'Aprobados', 'Rechazados', 'Requiere Corrección'],
+        datasets: [{
+            data: [
+                {{ mis_pendientes|default:0 }},
+                {{ mis_revision|default:0 }},
+                {{ mis_aprobados|default:0 }},
+                {{ mis_rechazados|default:0 }},
+                {{ mis_requiere_correccion|default:0 }}
+            ],
+            backgroundColor: [
+                colors.pendiente,
+                colors.en_revision,
+                colors.aprobado,
+                colors.rechazado,
+                colors.requiere_correccion
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Tipos del Usuario
+const misTiposCtx = document.getElementById('misTiposChart').getContext('2d');
+new Chart(misTiposCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ tipos_labels|safe }},
+        datasets: [{
+            label: 'Mis Informes',
+            data: {{ tipos_data|safe }},
+            backgroundColor: primaryColor,
+            borderColor: secondaryColor,
+            borderWidth: 1,
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Evolución del Usuario
+const miEvolucionCtx = document.getElementById('miEvolucionChart').getContext('2d');
+new Chart(miEvolucionCtx, {
+    type: 'line',
+    data: {
+        labels: {{ meses_labels|safe }},
+        datasets: [{
+            label: 'Mis Informes',
+            data: {{ meses_data|safe }},
+            borderColor: primaryColor,
+            backgroundColor: primaryColor + '20',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: primaryColor,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.1)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

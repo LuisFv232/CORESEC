@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Tipo de Informe - CORESEC{% endblock %}
+
+{% block content %}
+<div class="page-title">Crear Tipo de Informe</div>
+<div class="page-subtitle">Configura un nuevo tipo de informe para el sistema</div>
+
+<!-- Navegación -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'herramientas:herramientas' %}">Herramientas</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'herramientas:gestion_tipos_informes' %}">Tipos de Informes</a></li>
+        <li class="breadcrumb-item active">Crear Nuevo</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Nuevo Tipo de Informe</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Tipo de Informe <span class="text-danger">*</span></label>
+                                <select class="form-select" name="nombre" id="nombre" required>
+                                    <option value="">Seleccione un tipo</option>
+                                    {% for choice in tipos_choices %}
+                                        <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Seleccione el tipo de informe de la lista predefinida.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Estado</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="activo" id="activo" checked>
+                                    <label class="form-check-label" for="activo">
+                                        Activo
+                                    </label>
+                                </div>
+                                <div class="form-text">Los tipos inactivos no estarán disponibles para crear informes.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="descripcion" id="descripcion" rows="4"
+                                  placeholder="Descripción detallada del tipo de informe..." required></textarea>
+                        <div class="form-text">Proporcione una descripción clara del propósito y contenido de este tipo de informe.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Configuración de Período</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="requiere_periodo" id="requiere_periodo">
+                            <label class="form-check-label" for="requiere_periodo">
+                                Requiere especificar período
+                            </label>
+                        </div>
+                        <div class="form-text">Marque si este tipo de informe necesita especificar trimestre, fecha u otro período.</div>
+                    </div>
+
+                    <!-- Permisos de Usuario -->
+                    <div class="mb-4">
+                        <label class="form-label">Permisos de Acceso</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="permite_municipal" id="permite_municipal">
+                                            <label class="form-check-label" for="permite_municipal">
+                                                <i class="fas fa-building me-1 text-success"></i>
+                                                Encargado Municipal
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Permite a los encargados municipales crear este tipo de informe.</small>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="permite_coordinador" id="permite_coordinador" checked>
+                                            <label class="form-check-label" for="permite_coordinador">
+                                                <i class="fas fa-users me-1 text-warning"></i>
+                                                Coordinador
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Permite a los coordinadores crear este tipo de informe.</small>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="permite_admin" id="permite_admin" checked>
+                                            <label class="form-check-label" for="permite_admin">
+                                                <i class="fas fa-user-shield me-1 text-primary"></i>
+                                                Administrador
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Permite a los administradores crear este tipo de informe.</small>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <small>Debe seleccionar al menos un tipo de usuario que pueda acceder a este tipo de informe.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vista previa de configuración -->
+                    <div class="mb-4">
+                        <h6><i class="fas fa-eye me-2"></i>Vista Previa de la Configuración</h6>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Tipo:</strong> <span id="preview-tipo">-</span><br>
+                                        <strong>Estado:</strong> <span id="preview-estado">Activo</span><br>
+                                        <strong>Requiere Período:</strong> <span id="preview-periodo">No</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Usuarios Permitidos:</strong>
+                                        <div id="preview-permisos">
+                                            <span class="badge bg-primary me-1">Administrador</span>
+                                            <span class="badge bg-warning me-1">Coordinador</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'herramientas:gestion_tipos_informes' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Crear Tipo de Informe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del formulario
+    const nombreSelect = document.getElementById('nombre');
+    const activoCheck = document.getElementById('activo');
+    const requierePeriodoCheck = document.getElementById('requiere_periodo');
+    const permiteMunicipalCheck = document.getElementById('permite_municipal');
+    const permiteCoordinadorCheck = document.getElementById('permite_coordinador');
+    const permiteAdminCheck = document.getElementById('permite_admin');
+
+    // Elementos de vista previa
+    const previewTipo = document.getElementById('preview-tipo');
+    const previewEstado = document.getElementById('preview-estado');
+    const previewPeriodo = document.getElementById('preview-periodo');
+    const previewPermisos = document.getElementById('preview-permisos');
+
+    // Función para actualizar vista previa
+    function actualizarVistaPrevia() {
+        // Tipo
+        const tipoSeleccionado = nombreSelect.options[nombreSelect.selectedIndex];
+        previewTipo.textContent = tipoSeleccionado.value ? tipoSeleccionado.text : '-';
+
+        // Estado
+        previewEstado.textContent = activoCheck.checked ? 'Activo' : 'Inactivo';
+        previewEstado.className = activoCheck.checked ? 'text-success' : 'text-danger';
+
+        // Período
+        previewPeriodo.textContent = requierePeriodoCheck.checked ? 'Sí' : 'No';
+        previewPeriodo.className = requierePeriodoCheck.checked ? 'text-success' : 'text-muted';
+
+        // Permisos
+        let permisosHtml = '';
+        if (permiteAdminCheck.checked) {
+            permisosHtml += '<span class="badge bg-primary me-1">Administrador</span>';
+        }
+        if (permiteCoordinadorCheck.checked) {
+            permisosHtml += '<span class="badge bg-warning me-1">Coordinador</span>';
+        }
+        if (permiteMunicipalCheck.checked) {
+            permisosHtml += '<span class="badge bg-success me-1">Encargado Municipal</span>';
+        }
+
+        if (permisosHtml === '') {
+            permisosHtml = '<span class="text-muted">Ninguno seleccionado</span>';
+        }
+
+        previewPermisos.innerHTML = permisosHtml;
+    }
+
+    // Event listeners para actualizar vista previa
+    nombreSelect.addEventListener('change', actualizarVistaPrevia);
+    activoCheck.addEventListener('change', actualizarVistaPrevia);
+    requierePeriodoCheck.addEventListener('change', actualizarVistaPrevia);
+    permiteMunicipalCheck.addEventListener('change', actualizarVistaPrevia);
+    permiteCoordinadorCheck.addEventListener('change', actualizarVistaPrevia);
+    permiteAdminCheck.addEventListener('change', actualizarVistaPrevia);
+
+    // Validación del formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Verificar que al menos un permiso esté seleccionado
+        if (!permiteMunicipalCheck.checked && !permiteCoordinadorCheck.checked && !permiteAdminCheck.checked) {
+            e.preventDefault();
+            alert('Debe seleccionar al menos un tipo de usuario que pueda acceder a este tipo de informe.');
+            return false;
+        }
+
+        // Verificar campos requeridos
+        if (!nombreSelect.value) {
+            e.preventDefault();
+            alert('Debe seleccionar un tipo de informe.');
+            nombreSelect.focus();
+            return false;
+        }
+
+        if (!document.getElementById('descripcion').value.trim()) {
+            e.preventDefault();
+            alert('La descripción es obligatoria.');
+            document.getElementById('descripcion').focus();
+            return false;
+        }
+    });
+
+    // Inicializar vista previa
+    actualizarVistaPrevia();
+});
+</script>
+{% endblock %}

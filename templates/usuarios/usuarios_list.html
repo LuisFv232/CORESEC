@@ -1,0 +1,267 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Usuarios - ITCA 360{% endblock %}
+
+{% block header_title %}Gestión de Usuarios{% endblock %}
+
+{% block extra_css %}
+<style>
+    .usuarios-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .usuarios-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table th {
+        background: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .table td {
+        vertical-align: middle;
+        border-color: #eee;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 2px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .btn-edit {
+        background: #ffc107;
+        color: #212529;
+    }
+    
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .badge-role {
+        padding: 0.35rem 0.65rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .badge-admin {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .badge-coordinator {
+        background: #6f42c1;
+        color: white;
+    }
+    
+    .badge-municipal {
+        background: #28a745;
+        color: white;
+    }
+    
+    .filters-section {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="usuarios-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1><i class="fas fa-users me-3"></i>Gestión de Usuarios</h1>
+                <p>Administra los usuarios del sistema</p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{% url 'usuarios:register' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filtros -->
+    <div class="filters-section">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="q" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ request.GET.q }}" placeholder="Nombre, email, username...">
+            </div>
+            <div class="col-md-3">
+                <label for="role" class="form-label">Rol</label>
+                <select class="form-select" id="role" name="role">
+                    <option value="">Todos</option>
+                    <option value="ADMIN" {% if request.GET.role == 'ADMIN' %}selected{% endif %}>Administrador</option>
+                    <option value="COORDINATOR" {% if request.GET.role == 'COORDINATOR' %}selected{% endif %}>Coordinador</option>
+                    <option value="MUNICIPAL_MANAGER" {% if request.GET.role == 'MUNICIPAL_MANAGER' %}selected{% endif %}>Encargado Municipal</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Estado</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Activos</option>
+                    <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactivos</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Tabla de usuarios -->
+    <div class="usuarios-table">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;"></th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Municipalidad</th>
+                        <th>Fecha Registro</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>
+                            <div class="user-avatar">
+                                {{ usuario.first_name|first|upper }}{{ usuario.last_name|first|upper }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ usuario.get_full_name|default:usuario.username }}</div>
+                            <small class="text-muted">@{{ usuario.username }}</small>
+                        </td>
+                        <td>{{ usuario.email }}</td>
+                        <td>
+                            {% if usuario.is_staff %}
+                                <span class="badge badge-role badge-admin">Administrador</span>
+                            {% elif usuario.role == 'COORDINATOR' %}
+                                <span class="badge badge-role badge-coordinator">Coordinador</span>
+                            {% elif usuario.role == 'MUNICIPAL_MANAGER' %}
+                                <span class="badge badge-role badge-municipal">Encargado Municipal</span>
+                            {% else %}
+                                <span class="badge badge-role bg-secondary">Usuario</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if usuario.municipality %}
+                                {{ usuario.get_municipality_display }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ usuario.date_joined|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if usuario.is_active %}
+                                <span class="badge bg-success">Activo</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'usuarios:usuario_detail' usuario.id %}" class="btn btn-action btn-view" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'usuarios:usuario_edit' usuario.id %}" class="btn btn-action btn-edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if usuario.id != request.user.id %}
+                            <button class="btn btn-action btn-delete" title="Eliminar" onclick="eliminarUsuario({{ usuario.id }}, '{{ usuario.username }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No se encontraron usuarios con los filtros aplicados</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function eliminarUsuario(userId, username) {
+    if (confirm(`¿Estás seguro de que deseas eliminar al usuario ${username}? Esta acción no se puede deshacer.`)) {
+        fetch(`/usuarios/${userId}/eliminar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.mensaje);
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al eliminar el usuario');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CORESEC Huánuco{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary-color: #1DB178;
+            --secondary-color: #16a065;
+            --sidebar-bg: #1DB178;
+            --sidebar-hover: #16a065;
+            --accent-color: #0d4a35;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        /* AGREGADO: Botón de casa */
+        .home-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .sidebar-logo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 0.5rem;
+            filter: brightness(1.1);
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0;
+            color: white;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.2rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+            color: white;
+            border-left-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+            color: white;
+            border-left-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 1rem;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .user-info {
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            color: var(--primary-color);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .top-bar {
+            background-color: #1EB980;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .search-box input {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(29, 177, 120, 0.25);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.6rem 1.2rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 177, 120, 0.4);
+            color: white;
+        }
+
+        .content-area {
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.8rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .stat-icon.warning { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; }
+        .stat-icon.success { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; }
+        .stat-icon.danger { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); color: white; }
+        .stat-icon.primary { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; }
+        .stat-icon.info { background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%); color: white; }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .btn-primary, .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover, .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 177, 120, 0.4);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(29, 177, 120, 0.25);
+        }
+
+        .table th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .badge.bg-primary {
+            background: var(--primary-color) !important;
+        }
+
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+
+        .alert-primary {
+            background-color: rgba(29, 177, 120, 0.1);
+            border-color: var(--primary-color);
+            color: var(--accent-color);
+        }
+
+        .pagination .page-link {
+            color: var(--primary-color);
+            border-color: #dee2e6;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .pagination .page-link:hover {
+            color: var(--secondary-color);
+            background-color: rgba(29, 177, 120, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .top-bar {
+                padding: 1rem;
+            }
+
+            .search-box {
+                margin: 0 1rem;
+                max-width: 200px;
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card, .stat-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Scrollbar personalizado */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <!-- AGREGADO: Botón de casa -->
+            <a href="{% url 'home' %}" class="home-btn" title="Ir al inicio">
+                <i class="fas fa-home"></i>
+            </a>
+            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ed6e7ee6-d0c2-4af7-90b5-12e06ae9843c.jfif-11sJXno6mDc6wrJPLch3ysP2tNChNc.jpeg" alt="CORESEC" class="sidebar-logo">
+            <h4 class="sidebar-title">CORESEC</h4>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="{% url 'dashboard:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="{% url 'reportes:crear_informe' %}" class="nav-link {% if request.resolver_match.url_name == 'crear_informe' %}active{% endif %}">
+                    <i class="fas fa-upload"></i>
+                    Subir Informe
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="{% url 'reportes:lista_informes' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_informes' %}active{% endif %}">
+                    <i class="fas fa-chart-bar"></i>
+                    Informes y Reportes
+                </a>
+            </div>
+
+            {% if user.tipo_usuario in 'administrador,coordinador' %}
+            <div class="nav-item">
+                <a href="{% url 'usuarios:gestion_usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'gestion_usuarios' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    Gestión de Usuarios
+                </a>
+            </div>
+
+           <div class="nav-item">
+                <a href="{% url 'herramientas:herramientas' %}" class="nav-link {% if 'herramientas' in request.resolver_match.app_name|default:'' %}active{% endif %}">
+                    <i class="fas fa-tools"></i>
+                    Herramientas
+                </a>
+            </div>
+            {% endif %}
+
+
+            <div class="nav-item">
+                <a href="{% url 'notificaciones:notificaciones' %}" class="nav-link {% if request.resolver_match.url_name == 'notificaciones' %}active{% endif %}">
+                    <i class="fas fa-bell"></i>
+                    Notificaciones
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="{% url 'usuarios:perfil' %}" class="nav-link {% if request.resolver_match.url_name == 'perfil' %}active{% endif %}">
+                    <i class="fas fa-cog"></i>
+                    Configuración
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="user-role">{{ user.get_tipo_usuario_display }}</div>
+            </div>
+            <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline; width: 100%;">
+                {% csrf_token %}
+                <button type="submit" class="nav-link" style="background: none; border: none; width: 100%; text-align: left; color: rgba(255,255,255,0.8);">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <button class="btn btn-link d-md-none" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="search-box position-relative">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="form-control" placeholder="Buscar...">
+            </div>
+
+            <div class="top-actions">
+                <a href="{% url 'notificaciones:notificaciones' %}" class="btn btn-link position-relative">
+                    <i class="fas fa-bell"></i>
+                    {% if notificaciones_no_leidas > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ notificaciones_no_leidas }}
+                        </span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+
+        <div class="content-area">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+        }
+
+        // Cerrar sidebar en móvil al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('[onclick="toggleSidebar()"]');
+
+            if (window.innerWidth <= 768 &&
+                !sidebar.contains(e.target) &&
+                !toggleBtn.contains(e.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        // Animación de carga
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card, .stat-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

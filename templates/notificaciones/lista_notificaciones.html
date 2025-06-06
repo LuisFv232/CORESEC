@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Notificaciones - CORESEC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="page-title">Notificaciones</div>
+        <div class="page-subtitle">Mantente al día con las últimas actualizaciones</div>
+    </div>
+    {% if notificaciones_no_leidas > 0 %}
+        <a href="{% url 'notificaciones:marcar_todas_leidas' %}" class="btn btn-primary-custom">
+            <i class="fas fa-check-double me-2"></i>Marcar Todas como Leídas
+        </a>
+    {% endif %}
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">Filtros de Notificaciones</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos los tipos</option>
+                    <option value="info" {% if request.GET.tipo == "info" %}selected{% endif %}>Información</option>
+                    <option value="success" {% if request.GET.tipo == "success" %}selected{% endif %}>Éxito</option>
+                    <option value="warning" {% if request.GET.tipo == "warning" %}selected{% endif %}>Advertencia</option>
+                    <option value="error" {% if request.GET.tipo == "error" %}selected{% endif %}>Error</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Estado</label>
+                <select name="leida" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="false" {% if request.GET.leida == "false" %}selected{% endif %}>No leídas</option>
+                    <option value="true" {% if request.GET.leida == "true" %}selected{% endif %}>Leídas</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar en notificaciones..." value="{{ request.GET.buscar }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Notificaciones -->
+{% if notificaciones %}
+    {% for notificacion in notificaciones %}
+        <div class="card mb-3 {% if not notificacion.leida %}border-primary{% endif %}">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <div class="stat-icon {% if notificacion.tipo == 'info' %}info{% elif notificacion.tipo == 'success' %}success{% elif notificacion.tipo == 'warning' %}warning{% else %}danger{% endif %}" style="width: 40px; height: 40px; font-size: 1rem;">
+                            {% if notificacion.tipo == 'info' %}
+                                <i class="fas fa-info"></i>
+                            {% elif notificacion.tipo == 'success' %}
+                                <i class="fas fa-check"></i>
+                            {% elif notificacion.tipo == 'warning' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% else %}
+                                <i class="fas fa-times"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="mb-1 {% if not notificacion.leida %}fw-bold{% endif %}">{{ notificacion.titulo }}</h5>
+                            <div class="d-flex align-items-center">
+                                <small class="text-muted me-2">{{ notificacion.fecha_creacion|timesince }} ago</small>
+                                {% if not notificacion.leida %}
+                                    <a href="{% url 'notificaciones:marcar_leida' notificacion.id %}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-check me-1"></i>Marcar como Leída
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <p class="mb-2 text-muted">{{ notificacion.mensaje }}</p>
+                        
+                        {% if notificacion.enlace %}
+                            <a href="{{ notificacion.enlace }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>Ver Más
+                            </a>
+                        {% endif %}
+                        
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ notificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Paginación -->
+    {% if is_paginated %}
+        <nav aria-label="Paginación de notificaciones">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Primera</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Siguiente</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.leida %}&leida={{ request.GET.leida }}{% endif %}{% if request.GET.buscar %}&buscar={{ request.GET.buscar }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="card text-center py-5">
+        <div class="card-body">
+            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No tienes notificaciones</h4>
+            <p class="text-muted">Cuando tengas nuevas notificaciones aparecerán aquí</p>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

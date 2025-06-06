@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - ITCA360{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'green-custom': '#1e5128',
+                        'green-light': '#2d6a3e',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-in': 'slideIn 0.5s ease-in-out',
+                        'scale-in': 'scaleIn 0.3s ease-in-out',
+                        'bounce-in': 'bounceIn 0.5s ease-in-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.9)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        bounceIn: {
+                            '0%': { transform: 'scale(0.3)', opacity: '0' },
+                            '40%': { transform: 'scale(1.1)', opacity: '1' },
+                            '80%': { transform: 'scale(0.9)' },
+                            '100%': { transform: 'scale(1)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Transiciones suaves para todos los elementos interactivos */
+        a, button, input, select {
+            transition: all 0.3s ease;
+        }
+        
+        /* Animación para el menú lateral */
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        .nav-item:hover {
+            transform: translateX(5px);
+        }
+        
+        /* Animación para tarjetas */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Barra de desplazamiento personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #1e5128;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2d6a3e;
+        }
+        
+        /* Estilos para la barra lateral de desplazamiento */
+        .sidebar-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #2d6a3e #f1f1f1;
+        }
+        
+        /* Contenedor principal con scroll */
+        .main-content {
+            height: calc(100vh - 64px); /* Altura total menos la altura del header */
+            overflow-y: auto;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 overflow-hidden">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-green-custom text-white flex flex-col shadow-lg">
+            <!-- Logo -->
+            <div class="p-6 border-b border-green-light">
+                <a href="{% url 'dashboard' %}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-xl font-bold">ITCA360</span>
+                </a>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 p-4 overflow-y-auto sidebar-scroll">
+                <ul class="space-y-2">
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 p-3 rounded-lg {% if request.resolver_match.url_name == 'dashboard' %}bg-green-light{% else %}hover:bg-green-light{% endif %} text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    
+                    {% if user.role == 'MUNICIPAL_MANAGER' %}
+                    <li class="nav-item">
+                        <a href="{% url 'upload_report' %}" class="flex items-center space-x-3 p-3 rounded-lg {% if request.resolver_match.url_name == 'upload_report' %}bg-green-light{% else %}hover:bg-green-light{% endif %} text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                            <span>Subir Informe</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <a href="{% url 'report_list' %}" class="flex items-center space-x-3 p-3 rounded-lg {% if request.resolver_match.url_name == 'report_list' %}bg-green-light{% else %}hover:bg-green-light{% endif %} text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Informes y Reportes</span>
+                        </a>
+                    </li>
+                    
+                    {% if user.role == 'ADMIN' or user.role == 'COORDINATOR' %}
+                    <li class="nav-item">
+                        <a href="{% url 'user_list' %}" class="flex items-center space-x-3 p-3 rounded-lg {% if request.resolver_match.url_name == 'user_list' %}bg-green-light{% else %}hover:bg-green-light{% endif %} text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <span>Usuarios</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <a href="{% url 'profile' %}" class="flex items-center space-x-3 p-3 rounded-lg {% if request.resolver_match.url_name == 'profile' %}bg-green-light{% else %}hover:bg-green-light{% endif %} text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span>Configuración</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Sección de ayuda -->
+                <div class="mt-8">
+                    <h3 class="px-3 text-xs font-semibold text-green-100 uppercase tracking-wider">
+                        Ayuda y Soporte
+                    </h3>
+                    <ul class="mt-2 space-y-2">
+                        <li class="nav-item">
+                            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-green-light text-white transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Guía de Uso</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-green-light text-white transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Contacto</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="p-4 border-t border-green-light">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-green-light rounded-full flex items-center justify-center">
+                        <span class="text-sm font-medium">{{ user.first_name.0|default:'U' }}{{ user.last_name.0|default:'' }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">{{ user.get_full_name|default:user.username }}</p>
+                        <p class="text-xs text-green-100 truncate">{{ user.get_role_display }}</p>
+                    </div>
+                </div>
+                
+                <a href="{% url 'logout' %}" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-green-light text-green-100 hover:text-white transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span class="text-sm">Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <input type="text" placeholder="Buscar..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Botón de notificaciones -->
+                        <button class="p-2 text-gray-400 hover:text-gray-600 relative">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM16 3h5v5h-5V3zM4 3h6v6H4V3z"></path>
+                            </svg>
+                            <span class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        
+                        <!-- Botón de ayuda -->
+                        <button class="p-2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Botón de scroll hacia arriba -->
+                        <button id="scrollToTop" class="p-2 text-gray-400 hover:text-gray-600 hidden">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l7-7 7 7M5 19l7-7 7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content with Scroll -->
+            <div class="flex-1 overflow-y-auto main-content animate-fade-in">
+                {% block dashboard_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // Script para mostrar/ocultar el botón de scroll hacia arriba
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (mainContent && scrollToTopBtn) {
+            mainContent.addEventListener('scroll', function() {
+                if (mainContent.scrollTop > 300) {
+                    scrollToTopBtn.classList.remove('hidden');
+                } else {
+                    scrollToTopBtn.classList.add('hidden');
+                }
+            });
+            
+            scrollToTopBtn.addEventListener('click', function() {
+                mainContent.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+    });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

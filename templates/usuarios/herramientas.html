@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">{{ titulo }}</div>
+<div class="page-subtitle">{{ descripcion }}</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                <h5>Backup de Datos</h5>
+                <p class="text-muted">Respalda la información del sistema</p>
+                <button class="btn btn-outline-primary" disabled>
+                    <i class="fas fa-download me-2"></i>Generar Backup
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                <h5>Reportes Avanzados</h5>
+                <p class="text-muted">Genera reportes personalizados</p>
+                <button class="btn btn-outline-success" disabled>
+                    <i class="fas fa-chart-bar me-2"></i>Crear Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-cogs fa-3x text-warning mb-3"></i>
+                <h5>Configuración</h5>
+                <p class="text-muted">Ajustes del sistema</p>
+                <button class="btn btn-outline-warning" disabled>
+                    <i class="fas fa-cog me-2"></i>Configurar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <i class="fas fa-info-circle me-2"></i>
+    Las herramientas están en desarrollo. Próximamente estarán disponibles.
+</div>
+{% endblock %}

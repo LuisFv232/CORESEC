@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}ITCA360 - Gestión y Verificación Automatizada{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="bg-green-custom text-white">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-xl font-bold">ITCA360</span>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="bg-white text-green-custom px-4 py-2 rounded-lg font-medium hover:bg-gray-100">
+                Dashboard
+            </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="bg-white text-green-custom px-4 py-2 rounded-lg font-medium hover:bg-gray-100">
+                Iniciar Sesión
+            </a>
+        {% endif %}
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="bg-green-custom text-white py-20">
+    <div class="container mx-auto px-6">
+        <div class="max-w-3xl">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Gestión y Verificación Automatizada de Informes Técnicos
+            </h1>
+            <p class="text-xl mb-8 text-green-100">
+                Plataforma integral para la recepción, análisis y seguimiento de Informes Técnicos de Cumplimiento de Actividades (ITCA) para el COER Huánuco.
+            </p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="inline-flex items-center bg-white text-green-custom px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                    Ir al Dashboard
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="inline-flex items-center bg-white text-green-custom px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                    Comenzar ahora
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Características Principales -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold text-center mb-12">Características Principales</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Carga Automatizada -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Carga Automatizada</h3>
+                <p class="text-gray-600">Sube y valida informes técnicos de forma automática con notificaciones instantáneas.</p>
+            </div>
+
+            <!-- Análisis Comparativo -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Análisis Comparativo</h3>
+                <p class="text-gray-600">Compara automáticamente matrices de actividades programadas vs. ejecutadas.</p>
+            </div>
+
+            <!-- Notificaciones -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6zM16 3h5v5h-5V3zM4 3h6v6H4V3z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Notificaciones</h3>
+                <p class="text-gray-600">Sistema de alertas para mantener informados a todos los involucrados.</p>
+            </div>
+
+            <!-- Seguridad y Auditoría -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Seguridad y Auditoría</h3>
+                <p class="text-gray-600">Control de acceso por roles y registro completo de todas las acciones.</p>
+            </div>
+
+            <!-- Historial y Versiones -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Historial y Versiones</h3>
+                <p class="text-gray-600">Seguimiento histórico de informes con control de versiones.</p>
+            </div>
+
+            <!-- Reportes Personalizados -->
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Reportes Personalizados</h3>
+                <p class="text-gray-600">Genera informes de observaciones y recomendaciones descargables.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold mb-4">¿Listo para optimizar la gestión de informes?</h2>
+        <p class="text-xl text-gray-600 mb-8">
+            Reduce en un 60% el tiempo de gestión, minimiza errores y mejora la trazabilidad de los ITCA.
+        </p>
+        
+        {% if not user.is_authenticated %}
+        <div class="flex justify-center space-x-4">
+            <a href="{% url 'register' %}" class="bg-green-custom hover:bg-green-light text-white font-bold py-3 px-8 rounded-lg transition-colors">
+                Registrarse
+            </a>
+            <a href="{% url 'login' %}" class="border-2 border-green-custom text-green-custom hover:bg-green-custom hover:text-white font-bold py-3 px-8 rounded-lg transition-colors">
+                Iniciar Sesión
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

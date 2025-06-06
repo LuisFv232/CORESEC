@@ -1,0 +1,215 @@
+{% extends 'dashboard_base.html' %}
+
+{% block title %}Subir Informe - ITCA360{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex-1 p-6 animate-fade-in">
+    <div class="max-w-3xl mx-auto">
+        <div class="flex items-center mb-6">
+            <a href="{% url 'report_list' %}" class="mr-4 text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900">Subir Nuevo Informe</h1>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Título del Informe -->
+                        <div class="md:col-span-2">
+                            <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Título del Informe
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Tipo de Informe -->
+                        <div>
+                            <label for="{{ form.report_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tipo de Informe
+                            </label>
+                            {{ form.report_type }}
+                            {% if form.report_type.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.report_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Municipalidad -->
+                        <div>
+                            <label for="{{ form.municipality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Municipalidad
+                            </label>
+                            {% if user.role == 'MUNICIPAL_MANAGER' and user.municipality %}
+                                <input type="text" value="{{ user.get_municipality_display }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100" readonly>
+                                <input type="hidden" name="municipality" value="{{ user.municipality }}">
+                            {% else %}
+                                {{ form.municipality }}
+                            {% endif %}
+                            {% if form.municipality.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.municipality.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Año -->
+                        <div>
+                            <label for="{{ form.year.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Año
+                            </label>
+                            {{ form.year }}
+                            {% if form.year.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.year.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Trimestre -->
+                        <div id="trimester-container">
+                            <label for="{{ form.trimester.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Trimestre
+                            </label>
+                            {{ form.trimester }}
+                            {% if form.trimester.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.trimester.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div class="md:col-span-2">
+                            <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Descripción
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Archivos</h3>
+                        <p class="text-sm text-gray-500 mb-4">Sube hasta 4 archivos (PDF, Word, Excel) de máximo 10MB cada uno.</p>
+                        
+                        <div class="space-y-4">
+                            <!-- Archivo 1 (Obligatorio) -->
+                            <div>
+                                <label for="{{ form.file1.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Archivo 1 (Obligatorio)
+                                </label>
+                                {{ form.file1 }}
+                                {% if form.file1.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.file1.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Archivo 2 (Opcional) -->
+                            <div>
+                                <label for="{{ form.file2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Archivo 2 (Opcional)
+                                </label>
+                                {{ form.file2 }}
+                                {% if form.file2.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.file2.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Archivo 3 (Opcional) -->
+                            <div>
+                                <label for="{{ form.file3.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Archivo 3 (Opcional)
+                                </label>
+                                {{ form.file3 }}
+                                {% if form.file3.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.file3.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Archivo 4 (Opcional) -->
+                            <div>
+                                <label for="{{ form.file4.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Archivo 4 (Opcional)
+                                </label>
+                                {{ form.file4 }}
+                                {% if form.file4.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.file4.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <a href="{% url 'report_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition-colors">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="bg-green-custom hover:bg-green-light text-white font-bold py-2 px-6 rounded-lg transition-colors transform hover:scale-105">
+                            Subir Informe
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reportTypeSelect = document.getElementById('id_report_type');
+    const trimesterContainer = document.getElementById('trimester-container');
+    
+    function updateTrimesterVisibility() {
+        const selectedType = reportTypeSelect.value;
+        
+        // Tipos de informe que requieren trimestre
+        const requiresTrimester = ['ITCA', 'TRIMESTRAL_SEGUIMIENTO', 'SUPERVISION', 'FICHA_VERIFICACION'];
+        
+        if (requiresTrimester.includes(selectedType)) {
+            trimesterContainer.style.display = 'block';
+            document.getElementById('id_trimester').required = true;
+        } else {
+            trimesterContainer.style.display = 'none';
+            document.getElementById('id_trimester').required = false;
+        }
+    }
+    
+    // Ejecutar al cargar la página
+    updateTrimesterVisibility();
+    
+    // Ejecutar cuando cambie la selección
+    reportTypeSelect.addEventListener('change', updateTrimesterVisibility);
+    
+    // Animación para los archivos
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const fileName = this.files[0].name;
+                const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2); // en MB
+                
+                // Crear o actualizar el elemento de información del archivo
+                let fileInfo = this.nextElementSibling;
+                if (!fileInfo || !fileInfo.classList.contains('file-info')) {
+                    fileInfo = document.createElement('div');
+                    fileInfo.classList.add('file-info', 'mt-2', 'text-sm', 'text-gray-600', 'animate-fade-in');
+                    this.parentNode.appendChild(fileInfo);
+                }
+                
+                fileInfo.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>${fileName} (${fileSize} MB)</span>
+                    </div>
+                `;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

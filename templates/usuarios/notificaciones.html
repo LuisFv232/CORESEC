@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} - CORESEC Huánuco{% endblock %}
+
+{% block content %}
+<div class="page-title">{{ titulo }}</div>
+<div class="page-subtitle">{{ descripcion }}</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Notificaciones Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay notificaciones</h4>
+                    <p class="text-muted">No tienes notificaciones pendientes en este momento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Configuración
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked disabled>
+                    <label class="form-check-label" for="emailNotifications">
+                        Notificaciones por email
+                    </label>
+                </div>
+                
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="systemNotifications" checked disabled>
+                    <label class="form-check-label" for="systemNotifications">
+                        Notificaciones del sistema
+                    </label>
+                </div>
+                
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="reportNotifications" checked disabled>
+                    <label class="form-check-label" for="reportNotifications">
+                        Notificaciones de informes
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary-custom btn-sm w-100" disabled>
+                    <i class="fas fa-save me-2"></i>Guardar Configuración
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

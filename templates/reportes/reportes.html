@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reportes - ITCA 360{% endblock %}
+
+{% block header_title %}Reportes{% endblock %}
+
+{% block extra_css %}
+<style>
+.reportes-header {
+    background: linear-gradient(135deg, #1a9d68 0%, #158455 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 0 0 15px 15px;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+}
+
+.stats-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a9d68;
+    margin-bottom: 0.25rem;
+}
+
+.stats-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filters-section {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.reportes-table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table th {
+    background: #f8f9fa;
+    border: none;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.table td {
+    vertical-align: middle;
+    border-color: #eee;
+}
+
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+}
+
+.btn-view {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-approve {
+    background: #28a745;
+    color: white;
+}
+
+.btn-download {
+    background: #6f42c1;
+    color: white;
+}
+
+.btn-create {
+    background: #1a9d68;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-create:hover {
+    background: #158455;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="reportes-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1><i class="fas fa-chart-bar me-3"></i>Gestión de Reportes</h1>
+                <p>
+                    {% if user.role == 'MUNICIPAL_MANAGER' %}
+                        Administra tus informes municipales (ITCA, IAS, IAE)
+                    {% else %}
+                        Administra y visualiza todos los reportes del sistema
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{% url 'reportes:crear_reporte' %}" class="btn-create">
+                    <i class="fas fa-plus me-2"></i>Nuevo Reporte
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-4 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ total_reportes }}</div>
+                <div class="stats-label">Total Reportes</div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ reportes_atendidos }}</div>
+                <div class="stats-label">Atendidos</div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 mb-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ reportes_pendientes }}</div>
+                <div class="stats-label">Pendientes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <h2 class="text-lg font-semibold text-green-800 mb-3">Filtros</h2>
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="q" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ query }}" placeholder="Título, descripción...">
+            </div>
+            <div class="col-md-2">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select class="form-select" id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    {% for value, label in tipos_disponibles %}
+                    <option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if user.role != 'MUNICIPAL_MANAGER' %}
+            <div class="col-md-2">
+                <label for="municipio" class="form-label">Municipio</label>
+                <select class="form-select" id="municipio" name="municipio">
+                    <option value="">Todos</option>
+                    {% for municipio in municipios_disponibles %}
+                    <option value="{{ municipio }}" {% if municipio_filtro == municipio %}selected{% endif %}>{{ municipio }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="col-md-2">
+                <label for="año" class="form-label">Año</label>
+                <select class="form-select" id="año" name="año">
+                    <option value="">Todos</option>
+                    {% for año in años_disponibles %}
+                    <option value="{{ año }}" {% if año_filtro == año|stringformat:"s" %}selected{% endif %}>{{ año }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="estado" class="form-label">Estado</label>
+                <select class="form-select" id="estado" name="estado">
+                    <option value="">Todos</option>
+                    {% for value, text in estados_disponibles %}
+                    <option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ text }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de reportes -->
+    <div class="reportes-table">
+        {% if reportes %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Tipo</th>
+                            {% if user.role != 'MUNICIPAL_MANAGER' %}
+                            <th>Municipio</th>
+                            {% endif %}
+                            <th>Usuario</th>
+                            <th>Periodo</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reporte in reportes %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ reporte.titulo }}</div>
+                                <small class="text-muted">{{ reporte.descripcion|truncatechars:50 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ reporte.get_tipo_display }}</span>
+                            </td>
+                            {% if user.role != 'MUNICIPAL_MANAGER' %}
+                            <td>{{ reporte.municipio }}</td>
+                            {% endif %}
+                            <td>{{ reporte.usuario.get_full_name|default:reporte.usuario.username }}</td>
+                            <td>
+                                {% if reporte.trimestre %}
+                                    {{ reporte.get_trimestre_display }} {{ reporte.año }}
+                                {% else %}
+                                    {{ reporte.año }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reporte.estado == 'pendiente' %}
+                                    <span class="badge bg-warning">Pendiente</span>
+                                {% elif reporte.estado == 'atendido' %}
+                                    <span class="badge bg-success">Atendido</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rechazado</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ reporte.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'reportes:detalle_reporte' reporte.id %}" class="btn btn-action btn-view" title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if reporte.archivo %}
+                                <a href="{{ reporte.archivo.url }}" class="btn btn-action btn-download" title="Descargar" target="_blank">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+                                {% if reporte.estado == 'pendiente' and user.role in 'ADMIN,COORDINATOR' %}
+                                <button class="btn btn-action btn-approve" title="Cambiar estado" onclick="cambiarEstado({{ reporte.id }})">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% endif %}
+                                {% if reporte.estado == 'pendiente' and user.role in 'ADMIN,COORDINATOR' %}
+                                <a href="{% url 'reportes:crear_reporte' %}?responder={{ reporte.id }}" class="btn btn-action" style="background: #28a745; color: white;" title="Responder">
+                                    <i class="fas fa-reply"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted mb-3">No hay reportes disponibles</h4>
+                <p class="text-muted mb-4">
+                    {% if user.role == 'MUNICIPAL_MANAGER' %}
+                        Comienza creando tu primer informe municipal (ITCA, IAS o IAE)
+                    {% else %}
+                        No hay reportes en el sistema actualmente
+                    {% endif %}
+                </p>
+                <a href="{% url 'reportes:crear_reporte' %}" class="btn-create">
+                    <i class="fas fa-plus me-2"></i>Crear Primer Reporte
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Paginación -->
+    {% if reportes.has_other_pages %}
+    <div class="d-flex justify-content-center p-3">
+        <nav aria-label="Navegación de reportes">
+            <ul class="pagination">
+                {% if reportes.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reportes.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if municipio_filtro %}&municipio={{ municipio_filtro }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if año_filtro %}&año={{ año_filtro }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in reportes.paginator.page_range %}
+                {% if reportes.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > reportes.number|add:'-3' and num < reportes.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if municipio_filtro %}&municipio={{ municipio_filtro }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if año_filtro %}&año={{ año_filtro }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if reportes.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ reportes.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo_filtro %}&tipo={{ tipo_filtro }}{% endif %}{% if municipio_filtro %}&municipio={{ municipio_filtro }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro }}{% endif %}{% if año_filtro %}&año={{ año_filtro }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function cambiarEstado(reporteId) {
+    const nuevoEstado = prompt('Cambiar estado a:\n1. atendido\n2. rechazado\n\nEscribe el estado:');
+    
+    if (nuevoEstado && ['atendido', 'rechazado'].includes(nuevoEstado)) {
+        fetch(`/reportes/cambiar-estado/${reporteId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `estado=${nuevoEstado}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cambiar el estado');
+        });
+    }
+}
+</script>
+
+<!-- CSRF Token para AJAX -->
+{% csrf_token %}
+{% endblock %}

@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+
+{% block title %}Documentos y Recursos - CORESEC Huánuco{% endblock %}
+
+{% block extra_css %}
+<style>
+    .resource-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border-left: 5px solid var(--primary-color);
+    }
+    
+    .resource-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .category-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .resource-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .resource-content {
+        flex: 1;
+    }
+    
+    .resource-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .resource-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .resource-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .download-btn {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .download-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(29, 177, 120, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .search-box {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-tab {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        background: white;
+        color: #6c757d;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .filter-tab.active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+    
+    .filter-tab:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .filter-tab.active:hover {
+        color: white;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, rgba(29, 177, 120, 0.1) 0%, rgba(29, 177, 120, 0.05) 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <i class="fas fa-folder-open me-2"></i>Documentos y Recursos
+</div>
+<div class="page-subtitle">
+    Herramientas y recursos oficiales de CONASEC
+</div>
+
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_recursos }}</div>
+            <div class="stats-label">Total Recursos</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_categorias }}</div>
+            <div class="stats-label">Categorías</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ recursos_actualizados }}</div>
+            <div class="stats-label">Actualizados Hoy</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_descargas }}</div>
+            <div class="stats-label">Descargas</div>
+        </div>
+    </div>
+</div>
+
+<!-- Búsqueda y Filtros -->
+<div class="search-box">
+    <form method="GET" class="row g-3">
+        <div class="col-md-8">
+            <input type="text" name="buscar" class="form-control" placeholder="Buscar documentos, guías, formatos..." value="{{ request.GET.buscar }}">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary-custom w-100">
+                <i class="fas fa-search me-2"></i>Buscar
+            </button>
+        </div>
+    </form>
+    
+    <div class="filter-tabs mt-3">
+        <a href="?categoria=" class="filter-tab {% if not request.GET.categoria %}active{% endif %}">
+            <i class="fas fa-th-large me-1"></i>Todos
+        </a>
+        {% for categoria in categorias %}
+        <a href="?categoria={{ categoria }}" class="filter-tab {% if request.GET.categoria == categoria %}active{% endif %}">
+            <i class="fas fa-folder me-1"></i>{{ categoria|title }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Recursos por Categoría -->
+{% for categoria, recursos_categoria in recursos_por_categoria.items %}
+<div class="category-header">
+    <h4 class="mb-0">
+        <i class="fas fa-folder-open me-2"></i>{{ categoria|title }}
+        <span class="badge bg-light text-dark ms-2">{{ recursos_categoria|length }}</span>
+    </h4>
+</div>
+
+<div class="row">
+    {% for recurso in recursos_categoria %}
+    <div class="col-md-6 col-lg-4">
+        <div class="resource-card">
+            <div class="d-flex">
+                <div class="resource-icon">
+                    {% if recurso.tipo_archivo == 'PDF' %}
+                        <i class="fas fa-file-pdf"></i>
+                    {% elif recurso.tipo_archivo == 'DOC' %}
+                        <i class="fas fa-file-word"></i>
+                    {% elif recurso.tipo_archivo == 'XLS' %}
+                        <i class="fas fa-file-excel"></i>
+                    {% else %}
+                        <i class="fas fa-file-alt"></i>
+                    {% endif %}
+                </div>
+                <div class="resource-content">
+                    <div class="resource-title">{{ recurso.titulo }}</div>
+                    {% if recurso.descripcion %}
+                    <div class="resource-description">{{ recurso.descripcion|truncatewords:15 }}</div>
+                    {% endif %}
+                    <div class="resource-meta">
+                        {% if recurso.tipo_archivo %}
+                        <span><i class="fas fa-file me-1"></i>{{ recurso.tipo_archivo }}</span>
+                        {% endif %}
+                        {% if recurso.tamaño_archivo %}
+                        <span><i class="fas fa-weight me-1"></i>{{ recurso.tamaño_archivo }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-end">
+                <a href="{{ recurso.url }}" target="_blank" class="download-btn">
+                    <i class="fas fa-download"></i>Descargar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No hay recursos en esta categoría</h5>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% empty %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h5 class="text-muted">No se encontraron recursos</h5>
+    <p class="text-muted">Intenta con otros términos de búsqueda</p>
+</div>
+{% endfor %}
+
+<!-- Información adicional -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="resource-card">
+            <h5><i class="fas fa-info-circle me-2 text-primary"></i>Información Importante</h5>
+            <ul class="mb-0">
+                <li>Todos los recursos están disponibles en el sitio oficial de CONASEC</li>
+                <li>Los documentos se actualizan periódicamente según las normativas vigentes</li>
+                <li>Para consultas específicas, contacta al equipo técnico de CORESEC</li>
+                <li>Algunos recursos requieren conexión a internet para su descarga</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Contador de descargas
+    document.querySelectorAll('.download-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Aquí podrías implementar un contador de descargas
+            console.log('Descarga iniciada:', this.href);
+        });
+    });
+    
+    // Animación de entrada para las cards
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    });
+    
+    document.querySelectorAll('.resource-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}
